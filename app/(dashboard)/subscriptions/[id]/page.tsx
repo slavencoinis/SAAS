@@ -1,33 +1,28 @@
-export const unstable_instant = { prefetch: 'static' }
+'use client'
 
-import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
+import { useSubscription } from '@/hooks/useSubscriptions'
 import SubscriptionForm from '@/components/SubscriptionForm'
-import { Subscription } from '@/types/subscription'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { use } from 'react'
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function FormSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-6">
-      {/* Row 1: Naziv + URL */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <div className="h-3 w-16 rounded bg-gray-100 dark:bg-gray-800" />
-          <div className="h-10 rounded-lg bg-gray-100 dark:bg-gray-800" />
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 w-10 rounded bg-gray-100 dark:bg-gray-800" />
-          <div className="h-10 rounded-lg bg-gray-100 dark:bg-gray-800" />
-        </div>
+        {[1, 2].map((i) => (
+          <div key={i} className="space-y-2">
+            <div className="h-3 w-16 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-10 rounded-lg bg-gray-100 dark:bg-gray-800" />
+          </div>
+        ))}
       </div>
-      {/* Opis */}
       <div className="space-y-2">
         <div className="h-3 w-12 rounded bg-gray-100 dark:bg-gray-800" />
         <div className="h-10 rounded-lg bg-gray-100 dark:bg-gray-800" />
       </div>
-      {/* Row 2: Cijena + Valuta + Ciklus */}
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-2">
@@ -36,7 +31,6 @@ function FormSkeleton() {
           </div>
         ))}
       </div>
-      {/* Row 3: Datumi */}
       <div className="grid grid-cols-2 gap-4">
         {[1, 2].map((i) => (
           <div key={i} className="space-y-2">
@@ -45,7 +39,6 @@ function FormSkeleton() {
           </div>
         ))}
       </div>
-      {/* Row 4: Status + Usage + Kategorija */}
       <div className="grid grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-2">
@@ -54,63 +47,55 @@ function FormSkeleton() {
           </div>
         ))}
       </div>
-      {/* Biljeske */}
       <div className="space-y-2">
         <div className="h-3 w-16 rounded bg-gray-100 dark:bg-gray-800" />
         <div className="h-24 rounded-lg bg-gray-100 dark:bg-gray-800" />
       </div>
-      {/* Buttons */}
       <div className="flex gap-3">
-        <div className="h-10 w-32 rounded-lg bg-indigo-100 dark:bg-indigo-900/40" />
+        <div className="h-10 w-36 rounded-lg bg-indigo-100 dark:bg-indigo-900/40" />
         <div className="h-10 w-24 rounded-lg bg-gray-100 dark:bg-gray-800" />
       </div>
     </div>
   )
 }
 
-// ─── Dynamic content ──────────────────────────────────────────────────────────
-
-async function EditForm({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .single()
-
-  if (!data) notFound()
-
-  const subscription = data as Subscription
-
-  return (
-    <>
-      <p className="text-gray-500 dark:text-gray-400 text-sm">{subscription.name}</p>
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-        <SubscriptionForm subscription={subscription} />
-      </div>
-    </>
-  )
-}
-
-// ─── Page shell (renders instantly) ──────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function EditSubscriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
+  const { data: subscription, isLoading } = useSubscription(id)
+
   return (
     <div className="space-y-6">
-      {/* Static header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Uredi pretplatu</h1>
+      <div className="flex items-center gap-3">
+        <Link
+          href="/subscriptions"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Uredi pretplatu</h1>
+          {subscription && (
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{subscription.name}</p>
+          )}
+        </div>
       </div>
 
-      {/* Form streams in with skeleton */}
-      <Suspense fallback={<FormSkeleton />}>
-        <EditForm params={params} />
-      </Suspense>
+      {isLoading ? (
+        <FormSkeleton />
+      ) : !subscription ? (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+          <p className="text-gray-400 dark:text-gray-500 mb-4">Pretplata nije pronađena.</p>
+          <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">
+            Nazad na listu
+          </Link>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+          <SubscriptionForm subscription={subscription} />
+        </div>
+      )}
     </div>
   )
 }

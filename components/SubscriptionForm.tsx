@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Subscription, SubscriptionInsert } from '@/types/subscription'
+import { invalidateSubscriptions } from '@/hooks/useSubscriptions'
 
 interface Props {
   subscription?: Subscription
@@ -81,8 +82,8 @@ export default function SubscriptionForm({ subscription }: Props) {
     }
 
     if (err) { setError(err.message); setLoading(false); return }
+    invalidateSubscriptions()  // osvježi SWR cache — lista je instant svježa
     router.push('/subscriptions')
-    router.refresh()
   }
 
   // ─── Shared class strings ────────────────────────────────────────────────

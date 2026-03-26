@@ -1,8 +1,6 @@
-export const unstable_instant = { prefetch: 'static' }
+'use client'
 
-import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { Subscription } from '@/types/subscription'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import Link from 'next/link'
@@ -22,45 +20,34 @@ const categoryLabels: Record<string, string> = {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-function SubscriptionsTableSkeleton() {
+function TableSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
-      <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-6">
-        {['Naziv', 'Kategorija', 'Cijena', 'Datum obnove', 'Status', 'Koristenje'].map((h) => (
-          <div key={h} className="h-3 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+      <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-8">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div key={i} className="h-3 w-16 rounded bg-gray-200 dark:bg-gray-700" />
         ))}
       </div>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex gap-6 px-4 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div key={i} className="flex gap-8 px-4 py-4 border-b border-gray-100 dark:border-gray-800">
           <div className="space-y-1.5">
-            <div className="h-3.5 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-3.5 w-28 rounded bg-gray-100 dark:bg-gray-800" />
             <div className="h-2.5 w-20 rounded bg-gray-100 dark:bg-gray-800" />
           </div>
           <div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-gray-800 self-center" />
           <div className="h-3.5 w-16 rounded bg-gray-100 dark:bg-gray-800 self-center" />
           <div className="h-3.5 w-24 rounded bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-5 w-16 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-5 w-16 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
         </div>
       ))}
     </div>
   )
 }
 
-// ─── Dynamic content ──────────────────────────────────────────────────────────
+// ─── Table ────────────────────────────────────────────────────────────────────
 
-async function SubscriptionsList() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: subs } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  const subscriptions: Subscription[] = subs ?? []
+function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }) {
   const today = new Date()
 
   if (subscriptions.length === 0) {
@@ -168,16 +155,19 @@ async function SubscriptionsList() {
   )
 }
 
-// ─── Page shell (renders instantly) ──────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function SubscriptionsPage() {
+  const { data: subscriptions, isLoading } = useSubscriptions()
+
   return (
     <div className="space-y-6">
-      {/* Static header — part of the prerendered shell */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pretplate</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Upravljaj svim pretplatama</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+            {isLoading || !subscriptions ? 'Učitavanje...' : `${subscriptions.length} ukupno`}
+          </p>
         </div>
         <Link
           href="/subscriptions/new"
@@ -188,10 +178,10 @@ export default function SubscriptionsPage() {
         </Link>
       </div>
 
-      {/* Table streams in with skeleton while Supabase responds */}
-      <Suspense fallback={<SubscriptionsTableSkeleton />}>
-        <SubscriptionsList />
-      </Suspense>
+      {isLoading || !subscriptions
+        ? <TableSkeleton />
+        : <SubscriptionsTable subscriptions={subscriptions} />
+      }
     </div>
   )
 }

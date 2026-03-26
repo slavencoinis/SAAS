@@ -1,8 +1,6 @@
-export const unstable_instant = { prefetch: 'static' }
+'use client'
 
-import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { Subscription } from '@/types/subscription'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { CreditCard, TrendingUp, AlertTriangle, XCircle } from 'lucide-react'
@@ -37,57 +35,43 @@ function StatsSkeleton() {
   )
 }
 
-function TableSkeleton() {
+function ContentSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-3">
-      <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex gap-4">
-          <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
-          <div className="h-4 w-20 rounded bg-gray-100 dark:bg-gray-800" />
-          <div className="h-4 w-24 rounded bg-gray-100 dark:bg-gray-800" />
-          <div className="h-4 w-16 rounded bg-gray-100 dark:bg-gray-800" />
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function PanelsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {[0, 1].map((i) => (
-        <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-4">
-          <div className="h-4 w-40 rounded bg-gray-100 dark:bg-gray-800" />
-          {Array.from({ length: 3 }).map((_, j) => (
-            <div key={j} className="flex justify-between">
-              <div className="space-y-1">
-                <div className="h-3 w-28 rounded bg-gray-100 dark:bg-gray-800" />
-                <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {[0, 1].map((i) => (
+          <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-4">
+            <div className="h-4 w-40 rounded bg-gray-100 dark:bg-gray-800" />
+            {Array.from({ length: 3 }).map((_, j) => (
+              <div key={j} className="flex justify-between">
+                <div className="space-y-1">
+                  <div className="h-3 w-28 rounded bg-gray-100 dark:bg-gray-800" />
+                  <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+                </div>
+                <div className="h-6 w-12 rounded-full bg-gray-100 dark:bg-gray-800" />
               </div>
-              <div className="h-6 w-12 rounded-full bg-gray-100 dark:bg-gray-800" />
-            </div>
-          ))}
-        </div>
-      ))}
+            ))}
+          </div>
+        ))}
+      </div>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-3">
+        <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="flex gap-4">
+            <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-4 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-4 w-24 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-4 w-16 rounded bg-gray-100 dark:bg-gray-800" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
-// ─── Dynamic data components ──────────────────────────────────────────────────
+// ─── Dashboard content ────────────────────────────────────────────────────────
 
-async function DashboardStats() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: subs } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('renewal_date', { ascending: true })
-
-  const subscriptions: Subscription[] = subs ?? []
+function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
   const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
@@ -99,10 +83,10 @@ async function DashboardStats() {
   })
 
   const stats = [
-    { label: 'Aktivne pretplate', value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
-    { label: 'Misecni trošak',    value: `$${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
-    { label: 'Istice uskoro (30d)',value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
-    { label: 'Ne koriste se',     value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
+    { label: 'Aktivne pretplate',  value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
+    { label: 'Misecni trošak',     value: `$${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
+    { label: 'Istice uskoro (30d)', value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
+    { label: 'Ne koriste se',      value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
   ]
 
   return (
@@ -124,18 +108,7 @@ async function DashboardStats() {
   )
 }
 
-async function DashboardPanels() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  const { data: subs } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('renewal_date', { ascending: true })
-
-  const subscriptions: Subscription[] = subs ?? []
+function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) {
   const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const yearlyTotal = monthlyTotal * 12
@@ -148,7 +121,7 @@ async function DashboardPanels() {
   })
 
   return (
-    <>
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Expiring soon */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
@@ -279,33 +252,34 @@ async function DashboardPanels() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 
-// ─── Page shell (renders instantly) ──────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const { data: subscriptions, isLoading } = useSubscriptions()
+
   return (
     <div className="space-y-8">
-      {/* Static header — part of the prerendered shell */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS pretplata</p>
       </div>
 
-      {/* Stats stream in immediately once Supabase responds */}
-      <Suspense fallback={<StatsSkeleton />}>
-        <DashboardStats />
-      </Suspense>
-
-      {/* Panels + table stream in together */}
-      <Suspense fallback={<><PanelsSkeleton /><TableSkeleton /></>}>
-        <DashboardPanels />
-      </Suspense>
-
-      {/* Adobe checker is client component, no change needed */}
-      <AdobeUsageChecker />
+      {isLoading || !subscriptions ? (
+        <>
+          <StatsSkeleton />
+          <ContentSkeleton />
+        </>
+      ) : (
+        <>
+          <DashboardStats subscriptions={subscriptions} />
+          <DashboardContent subscriptions={subscriptions} />
+          <AdobeUsageChecker />
+        </>
+      )}
     </div>
   )
 }
