@@ -246,14 +246,16 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
       </div>
 
       {subscriptions.length > 0 && (
-        <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 flex items-center justify-between">
-          <div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4">
             <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">{t('yearly_cost')}</p>
-            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">€{yearlyTotal.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">€{yearlyTotal.toFixed(2)}</p>
+            <p className="text-xs text-indigo-500 dark:text-indigo-500 mt-1">{active.length} {t('active_services_count')}</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} {t('active_services_count')}</p>
-            <p className="text-xs text-indigo-500 mt-1">~€{monthlyTotal.toFixed(2)}/{t('cycle_short_monthly')}</p>
+          <div className="bg-green-50 dark:bg-green-950/50 border border-green-100 dark:border-green-900 rounded-xl p-4">
+            <p className="text-sm font-medium text-green-900 dark:text-green-300">{t('monthly_cost_total')}</p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400 mt-1">€{monthlyTotal.toFixed(2)}</p>
+            <p className="text-xs text-green-500 dark:text-green-500 mt-1">~€{(monthlyTotal / (active.length || 1)).toFixed(2)} / {t('active_services_count')}</p>
           </div>
         </div>
       )}
