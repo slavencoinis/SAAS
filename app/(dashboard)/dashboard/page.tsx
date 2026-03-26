@@ -3,7 +3,8 @@
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
-import { format, differenceInDays, parseISO } from 'date-fns'
+import { differenceInDays } from 'date-fns'
+import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
 import { CreditCard, TrendingUp, AlertTriangle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
@@ -79,8 +80,10 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
-    if (!s.renewal_date || s.status === 'cancelled') return false
-    const days = differenceInDays(parseISO(s.renewal_date), today)
+    if (s.status === 'cancelled') return false
+    const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+    if (!d) return false
+    const days = differenceInDays(d, today)
     return days >= 0 && days <= 30
   })
 
@@ -118,8 +121,10 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
-    if (!s.renewal_date || s.status === 'cancelled') return false
-    const days = differenceInDays(parseISO(s.renewal_date), today)
+    if (s.status === 'cancelled') return false
+    const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+    if (!d) return false
+    const days = differenceInDays(d, today)
     return days >= 0 && days <= 30
   })
 
@@ -137,13 +142,14 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
           ) : (
             <div className="space-y-3">
               {expiringSoon.slice(0, 5).map((s) => {
-                const days = differenceInDays(parseISO(s.renewal_date!), today)
+                const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)!
+                const days = differenceInDays(d, today)
                 return (
                   <div key={s.id} className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {format(parseISO(s.renewal_date!), 'dd.MM.yyyy')}
+                        {formatRenewal(d)}
                       </p>
                     </div>
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -233,7 +239,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                       {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : s.billing_cycle === 'yearly' ? t('cycle_short_yearly') : s.billing_cycle}
                     </td>
                     <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
-                      {s.renewal_date ? format(parseISO(s.renewal_date), 'dd.MM.yyyy') : '-'}
+                      {formatRenewal(getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle))}
                     </td>
                     <td className="py-2.5 px-3"><StatusBadge status={s.status} /></td>
                     <td className="py-2.5 px-3"><UsageBadge usage={s.usage_status} /></td>

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Subscription, SubscriptionInsert } from '@/types/subscription'
 import { invalidateSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
+import { calcNextRenewal, toISODate } from '@/lib/renewalUtils'
 
 interface Props {
   subscription?: Subscription
@@ -53,7 +54,21 @@ export default function SubscriptionForm({ subscription }: Props) {
   )
 
   const set = (key: keyof SubscriptionInsert, value: string | number | boolean) =>
-    setForm((prev) => ({ ...prev, [key]: value }))
+    setForm((prev) => {
+      const next = { ...prev, [key]: value }
+      // Auto-calculate renewal date when start_date or billing_cycle changes
+      if (key === 'start_date' || key === 'billing_cycle') {
+        const sd = key === 'start_date' ? (value as string) : prev.start_date
+        const bc = key === 'billing_cycle' ? (value as string) : prev.billing_cycle
+        if (sd && bc !== 'one-time') {
+          const calc = calcNextRenewal(sd, bc)
+          if (calc) next.renewal_date = toISODate(calc)
+        } else if (bc === 'one-time') {
+          next.renewal_date = ''
+        }
+      }
+      return next
+    })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

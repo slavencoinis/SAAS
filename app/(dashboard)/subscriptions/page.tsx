@@ -3,7 +3,8 @@
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
-import { format, differenceInDays, parseISO } from 'date-fns'
+import { differenceInDays } from 'date-fns'
+import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
 import Link from 'next/link'
 import { PlusCircle, ExternalLink } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
@@ -84,9 +85,8 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {subscriptions.map((s) => {
-              const daysUntilRenewal = s.renewal_date
-                ? differenceInDays(parseISO(s.renewal_date), today)
-                : null
+              const renewalDate = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+              const daysUntilRenewal = renewalDate ? differenceInDays(renewalDate, today) : null
               const isExpiringSoon =
                 daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
 
@@ -122,10 +122,10 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    {s.renewal_date ? (
+                    {renewalDate ? (
                       <div>
                         <span className={isExpiringSoon ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200'}>
-                          {format(parseISO(s.renewal_date), 'dd.MM.yyyy')}
+                          {formatRenewal(renewalDate)}
                         </span>
                         {daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 30 && (
                           <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-red-500' : 'text-yellow-500'}`}>
