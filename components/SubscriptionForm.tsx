@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Subscription, SubscriptionInsert } from '@/types/subscription'
 import { invalidateSubscriptions } from '@/hooks/useSubscriptions'
+import { useLanguage } from '@/components/LanguageProvider'
 
 interface Props {
   subscription?: Subscription
@@ -28,6 +29,7 @@ const defaultValues: SubscriptionInsert = {
 
 export default function SubscriptionForm({ subscription }: Props) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState<SubscriptionInsert>(
@@ -60,7 +62,7 @@ export default function SubscriptionForm({ subscription }: Props) {
 
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError('Niste prijavljeni'); setLoading(false); return }
+    if (!user) { setError(t('not_logged_in')); setLoading(false); return }
 
     const payload = {
       ...form,
@@ -82,7 +84,7 @@ export default function SubscriptionForm({ subscription }: Props) {
     }
 
     if (err) { setError(err.message); setLoading(false); return }
-    invalidateSubscriptions()  // osvježi SWR cache — lista je instant svježa
+    invalidateSubscriptions()
     router.push('/subscriptions')
   }
 
@@ -109,7 +111,7 @@ export default function SubscriptionForm({ subscription }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={labelCls}>Naziv *</label>
+          <label className={labelCls}>{t('form_name')}</label>
           <input
             className={inputCls}
             value={form.name}
@@ -119,7 +121,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           />
         </div>
         <div>
-          <label className={labelCls}>URL</label>
+          <label className={labelCls}>{t('form_url')}</label>
           <input
             className={inputCls}
             value={form.url ?? ''}
@@ -131,18 +133,18 @@ export default function SubscriptionForm({ subscription }: Props) {
       </div>
 
       <div>
-        <label className={labelCls}>Opis</label>
+        <label className={labelCls}>{t('form_description')}</label>
         <input
           className={inputCls}
           value={form.description ?? ''}
           onChange={(e) => set('description', e.target.value)}
-          placeholder="Kratki opis svrhe servisa"
+          placeholder={t('form_desc_placeholder')}
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className={labelCls}>Cijena *</label>
+          <label className={labelCls}>{t('form_price')}</label>
           <input
             className={inputCls}
             value={form.price}
@@ -154,7 +156,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           />
         </div>
         <div>
-          <label className={labelCls}>Valuta</label>
+          <label className={labelCls}>{t('form_currency')}</label>
           <select className={inputCls} value={form.currency} onChange={(e) => set('currency', e.target.value)}>
             <option>EUR</option>
             <option>USD</option>
@@ -164,19 +166,19 @@ export default function SubscriptionForm({ subscription }: Props) {
           </select>
         </div>
         <div>
-          <label className={labelCls}>Ciklus naplate</label>
+          <label className={labelCls}>{t('form_billing_cycle')}</label>
           <select className={inputCls} value={form.billing_cycle} onChange={(e) => set('billing_cycle', e.target.value)}>
-            <option value="monthly">Mjesecno</option>
-            <option value="yearly">Godisnje</option>
-            <option value="weekly">Sedmicno</option>
-            <option value="one-time">Jednokratno</option>
+            <option value="monthly">{t('billing_monthly')}</option>
+            <option value="yearly">{t('billing_yearly')}</option>
+            <option value="weekly">{t('billing_weekly')}</option>
+            <option value="one-time">{t('billing_once')}</option>
           </select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={labelCls}>Datum pocetka</label>
+          <label className={labelCls}>{t('form_start_date')}</label>
           <input
             className={inputCls}
             value={form.start_date ?? ''}
@@ -185,7 +187,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           />
         </div>
         <div>
-          <label className={labelCls}>Datum obnove</label>
+          <label className={labelCls}>{t('form_renewal_date')}</label>
           <input
             className={inputCls}
             value={form.renewal_date ?? ''}
@@ -197,55 +199,55 @@ export default function SubscriptionForm({ subscription }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className={labelCls}>Status</label>
+          <label className={labelCls}>{t('form_status')}</label>
           <select className={inputCls} value={form.status} onChange={(e) => set('status', e.target.value)}>
-            <option value="active">Aktivna</option>
-            <option value="trial">Trial</option>
-            <option value="inactive">Neaktivna</option>
-            <option value="cancelled">Otkazana</option>
-            <option value="overlimit">Overlimit - Review Needed</option>
+            <option value="active">{t('status_active')}</option>
+            <option value="trial">{t('status_trial')}</option>
+            <option value="inactive">{t('status_inactive')}</option>
+            <option value="cancelled">{t('status_cancelled')}</option>
+            <option value="overlimit">{t('status_overlimit')}</option>
           </select>
         </div>
         <div>
-          <label className={labelCls}>Status koristenja</label>
+          <label className={labelCls}>{t('form_usage_status')}</label>
           <select className={inputCls} value={form.usage_status} onChange={(e) => set('usage_status', e.target.value)}>
-            <option value="high">Visoko</option>
-            <option value="medium">Srednje</option>
-            <option value="low">Nisko</option>
-            <option value="unused">Ne koristi se</option>
+            <option value="high">{t('usage_high')}</option>
+            <option value="medium">{t('usage_medium')}</option>
+            <option value="low">{t('usage_low')}</option>
+            <option value="unused">{t('usage_unused')}</option>
           </select>
         </div>
         <div>
-          <label className={labelCls}>Kategorija</label>
+          <label className={labelCls}>{t('form_category')}</label>
           <select className={inputCls} value={form.category ?? 'other'} onChange={(e) => set('category', e.target.value)}>
-            <option value="productivity">Produktivnost</option>
-            <option value="development">Development</option>
-            <option value="design">Dizajn</option>
-            <option value="marketing">Marketing</option>
-            <option value="communication">Komunikacija</option>
-            <option value="storage">Storage</option>
-            <option value="other">Ostalo</option>
+            <option value="productivity">{t('cat_productivity')}</option>
+            <option value="development">{t('cat_development')}</option>
+            <option value="design">{t('cat_design')}</option>
+            <option value="marketing">{t('cat_marketing')}</option>
+            <option value="communication">{t('cat_communication')}</option>
+            <option value="storage">{t('cat_storage')}</option>
+            <option value="other">{t('cat_other')}</option>
           </select>
         </div>
       </div>
 
       <div>
-        <label className={labelCls}>Biljeske</label>
+        <label className={labelCls}>{t('form_notes')}</label>
         <textarea
           className={inputCls}
           value={form.notes ?? ''}
           onChange={(e) => set('notes', e.target.value)}
           rows={3}
-          placeholder="Dodatne napomene..."
+          placeholder={t('form_notes_placeholder')}
         />
       </div>
 
       {/* API Key Linked toggle */}
       <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
         <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">API Key Linked</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('form_api_key_title')}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Da li je API ključ za ovaj servis povezan sa integracijom
+            {t('form_api_key_desc')}
           </p>
         </div>
         <button
@@ -271,14 +273,14 @@ export default function SubscriptionForm({ subscription }: Props) {
           disabled={loading}
           className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Cuvanje...' : subscription ? 'Sacuvaj izmjene' : 'Dodaj servis'}
+          {loading ? t('btn_saving') : subscription ? t('btn_save_changes') : t('btn_add_service')}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className="px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
-          Otkazi
+          {t('btn_cancel')}
         </button>
       </div>
     </form>

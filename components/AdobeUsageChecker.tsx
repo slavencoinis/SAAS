@@ -5,8 +5,10 @@ import { runAdobeUsageCheck, AdobeCheckResult } from '@/app/actions/adobeCheck'
 import { AdobeAppUsage, UNDERUTILIZED_THRESHOLD_DAYS } from '@/lib/adobe/checkAdobeUsage'
 import { format } from 'date-fns'
 import { AlertTriangle, CheckCircle, RefreshCw, Layers } from 'lucide-react'
+import { useLanguage } from '@/components/LanguageProvider'
 
 function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
+  const { t } = useLanguage()
   const formattedDate = format(new Date(usage.lastOpened), 'dd.MM.yyyy HH:mm')
   const over = usage.isUnderutilized
 
@@ -24,15 +26,15 @@ function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
         <div>
           <p className="text-sm font-semibold text-gray-900 dark:text-white">{usage.subscriptionName}</p>
           <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-            Posljednji put otvoren:{' '}
+            {t('adobe_last_opened')}{' '}
             <span className="font-medium text-gray-700 dark:text-gray-200">{formattedDate}</span>
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Neaktivan:{' '}
+            {t('adobe_inactive')}{' '}
             <span className={`font-medium ${over ? 'text-orange-700 dark:text-orange-400' : 'text-green-700 dark:text-green-400'}`}>
-              {usage.daysSinceLastUse} {usage.daysSinceLastUse === 1 ? 'dan' : 'dana'}
+              {usage.daysSinceLastUse} {usage.daysSinceLastUse === 1 ? t('adobe_days_singular') : t('adobe_days_plural')}
             </span>{' '}
-            <span className="text-gray-400 dark:text-gray-500">(prag: {UNDERUTILIZED_THRESHOLD_DAYS} dana)</span>
+            <span className="text-gray-400 dark:text-gray-500">({t('adobe_threshold')} {UNDERUTILIZED_THRESHOLD_DAYS} {t('adobe_days_unit')})</span>
           </p>
         </div>
       </div>
@@ -42,7 +44,7 @@ function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
           ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300'
           : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
       }`}>
-        {over ? 'Underutilized' : 'U upotrebi'}
+        {over ? 'Underutilized' : t('adobe_in_use')}
       </span>
     </div>
   )
@@ -51,6 +53,7 @@ function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
 export default function AdobeUsageChecker() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<AdobeCheckResult | null>(null)
+  const { t } = useLanguage()
 
   async function handleCheck() {
     setLoading(true)
@@ -83,7 +86,7 @@ export default function AdobeUsageChecker() {
           className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Provjerava...' : 'Simuliraj provjeru'}
+          {loading ? t('adobe_checking') : t('adobe_check_btn')}
         </button>
       </div>
 
@@ -92,7 +95,7 @@ export default function AdobeUsageChecker() {
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Simulira Adobe CC API poziv koji provjerava kada je Photoshop posljednji put otvoren.
           Ako nije korišten{' '}
-          <span className="font-medium text-gray-700 dark:text-gray-200">{UNDERUTILIZED_THRESHOLD_DAYS}+ dana</span>,
+          <span className="font-medium text-gray-700 dark:text-gray-200">{UNDERUTILIZED_THRESHOLD_DAYS}+ {t('adobe_days_unit')}</span>,
           licenca se automatski označava kao{' '}
           <span className="rounded bg-orange-100 dark:bg-orange-900/40 px-1.5 py-0.5 text-xs font-medium text-orange-800 dark:text-orange-300">
             Underutilized
@@ -120,9 +123,9 @@ export default function AdobeUsageChecker() {
 
           {result.noSubscriptionsFound && (
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-6 text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Nema Adobe servisa</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('adobe_no_services')}</p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Dodaj servis čiji naziv sadrži "Adobe", "Photoshop", "Creative Cloud" itd.
+                {t('adobe_no_hint')}
               </p>
             </div>
           )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useSubscription } from '@/hooks/useSubscriptions'
+import { useLanguage } from '@/components/LanguageProvider'
 import SubscriptionForm from '@/components/SubscriptionForm'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
@@ -64,6 +65,7 @@ function FormSkeleton() {
 export default function EditSubscriptionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: subscription, isLoading } = useSubscription(id)
+  const { t } = useLanguage()
 
   return (
     <div className="space-y-6">
@@ -75,7 +77,7 @@ export default function EditSubscriptionPage({ params }: { params: Promise<{ id:
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Uredi servis</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('page_edit_title')}</h1>
           {subscription && (
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{subscription.name}</p>
           )}
@@ -86,9 +88,9 @@ export default function EditSubscriptionPage({ params }: { params: Promise<{ id:
         <FormSkeleton />
       ) : !subscription ? (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-          <p className="text-gray-400 dark:text-gray-500 mb-4">Servis nije pronađen.</p>
+          <p className="text-gray-400 dark:text-gray-500 mb-4">{t('service_not_found')}</p>
           <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">
-            Nazad na listu
+            {t('back_to_list')}
           </Link>
         </div>
       ) : (

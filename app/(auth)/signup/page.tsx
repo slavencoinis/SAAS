@@ -4,8 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Layers } from 'lucide-react'
+import { useLanguage } from '@/components/LanguageProvider'
 
 export default function SignupPage() {
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +27,7 @@ export default function SignupPage() {
       return
     }
 
-    setMessage('Provjeri email za potvrdu registracije.')
+    setMessage(t('signup_success'))
     setLoading(false)
   }
 
@@ -48,7 +50,7 @@ export default function SignupPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SaaS Manager</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Kreiraj novi racun</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t('signup_subtitle')}</p>
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
@@ -74,7 +76,7 @@ export default function SignupPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lozinka</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login_password')}</label>
               <input
                 type="password"
                 value={password}
@@ -89,14 +91,14 @@ export default function SignupPage() {
               disabled={loading}
               className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors mt-2"
             >
-              {loading ? 'Registrovanje...' : 'Registruj se'}
+              {loading ? t('signup_loading') : t('signup_btn')}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            Vec imas racun?{' '}
+            {t('signup_has_account')}{' '}
             <Link href="/login" className="text-indigo-500 font-medium hover:underline">
-              Prijavi se
+              {t('signup_login')}
             </Link>
           </p>
         </div>

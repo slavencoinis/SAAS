@@ -1,6 +1,7 @@
 'use client'
 
 import { useSubscriptions } from '@/hooks/useSubscriptions'
+import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import { CreditCard, TrendingUp, AlertTriangle, XCircle } from 'lucide-react'
@@ -72,6 +73,7 @@ function ContentSkeleton() {
 // ─── Dashboard content ────────────────────────────────────────────────────────
 
 function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
+  const { t } = useLanguage()
   const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
@@ -83,10 +85,10 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
   })
 
   const stats = [
-    { label: 'Aktivni servisi',     value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
-    { label: 'Misecni trošak',     value: `€${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
-    { label: 'Istice uskoro (30d)', value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
-    { label: 'Ne koriste se',      value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
+    { label: t('stat_active_services'),  value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
+    { label: t('stat_monthly_cost'),     value: `€${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
+    { label: t('stat_expiring_soon'),    value: expiringSoon.length,           icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
+    { label: t('stat_unused'),           value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
   ]
 
   return (
@@ -109,6 +111,7 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
 }
 
 function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) {
+  const { t } = useLanguage()
   const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const yearlyTotal = monthlyTotal * 12
@@ -127,10 +130,10 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-yellow-500" />
-            Istice uskoro
+            {t('section_expiring_soon')}
           </h2>
           {expiringSoon.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Nema servisa koji isticu u sljedecih 30 dana.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">{t('no_expiring')}</p>
           ) : (
             <div className="space-y-3">
               {expiringSoon.slice(0, 5).map((s) => {
@@ -148,7 +151,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                         ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400'
                         : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400'
                     }`}>
-                      {days === 0 ? 'Danas' : `${days}d`}
+                      {days === 0 ? t('today') : `${days}d`}
                     </span>
                   </div>
                 )
@@ -161,19 +164,21 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <XCircle className="w-4 h-4 text-red-500" />
-            Servisi koje ne koristis
+            {t('section_unused')}
           </h2>
           {unused.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Svi aktivni servisi se koriste.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">{t('no_unused')}</p>
           ) : (
             <div className="space-y-3">
               {unused.map((s) => (
                 <div key={s.id} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{s.currency} {s.price}/{s.billing_cycle === 'monthly' ? 'mj' : 'god'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : t('cycle_short_yearly')}
+                    </p>
                   </div>
-                  <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">Uredi</Link>
+                  <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">{t('edit')}</Link>
                 </div>
               ))}
             </div>
@@ -181,9 +186,9 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
           {unused.length > 0 && (
             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Potencijalna ustedevina:{' '}
+                {t('potential_savings')}{' '}
                 <span className="font-semibold text-red-600 dark:text-red-400">
-                  €{unused.reduce((s, sub) => s + getMonthlyEquivalent(sub.price, sub.billing_cycle), 0).toFixed(2)}/mj
+                  €{unused.reduce((s, sub) => s + getMonthlyEquivalent(sub.price, sub.billing_cycle), 0).toFixed(2)}/{t('cycle_short_monthly')}
                 </span>
               </p>
             </div>
@@ -191,17 +196,17 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
         </div>
       </div>
 
-      {/* Recent */}
+      {/* All services */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Svi servisi</h2>
-          <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">Vidi sve</Link>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('section_all_services')}</h2>
+          <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">{t('see_all')}</Link>
         </div>
         {subscriptions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">Nemas jos nijedan servis.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">{t('no_services_yet')}</p>
             <Link href="/subscriptions/new" className="inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
-              Dodaj prvi servis
+              {t('add_first_service')}
             </Link>
           </div>
         ) : (
@@ -209,11 +214,11 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 dark:border-gray-800">
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">Naziv</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">Cijena</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">Obnova</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">Status</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">Koristenje</th>
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_name')}</th>
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_price')}</th>
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_short_renewal')}</th>
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_status')}</th>
+                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_usage')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
@@ -225,7 +230,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                       </Link>
                     </td>
                     <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
-                      {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? 'mj' : s.billing_cycle === 'yearly' ? 'god' : s.billing_cycle}
+                      {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : s.billing_cycle === 'yearly' ? t('cycle_short_yearly') : s.billing_cycle}
                     </td>
                     <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
                       {s.renewal_date ? format(parseISO(s.renewal_date), 'dd.MM.yyyy') : '-'}
@@ -243,12 +248,12 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
       {subscriptions.length > 0 && (
         <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">Godisnji trošak</p>
+            <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">{t('yearly_cost')}</p>
             <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">€{yearlyTotal.toFixed(2)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} aktivnih servisa</p>
-            <p className="text-xs text-indigo-500 mt-1">~€{monthlyTotal.toFixed(2)}/mj</p>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} {t('active_services_count')}</p>
+            <p className="text-xs text-indigo-500 mt-1">~€{monthlyTotal.toFixed(2)}/{t('cycle_short_monthly')}</p>
           </div>
         </div>
       )}
@@ -260,12 +265,13 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
 
 export default function DashboardPage() {
   const { data: subscriptions, isLoading } = useSubscriptions()
+  const { t } = useLanguage()
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS servisa</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('dashboard_title')}</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{t('dashboard_subtitle')}</p>
       </div>
 
       {isLoading || !subscriptions ? (

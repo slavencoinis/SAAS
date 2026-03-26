@@ -1,22 +1,13 @@
 'use client'
 
 import { useSubscriptions } from '@/hooks/useSubscriptions'
+import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { format, differenceInDays, parseISO } from 'date-fns'
 import Link from 'next/link'
 import { PlusCircle, ExternalLink } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
-
-const categoryLabels: Record<string, string> = {
-  productivity: 'Produktivnost',
-  development: 'Development',
-  design: 'Dizajn',
-  marketing: 'Marketing',
-  communication: 'Komunikacija',
-  storage: 'Storage',
-  other: 'Ostalo',
-}
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -48,18 +39,29 @@ function TableSkeleton() {
 // ─── Table ────────────────────────────────────────────────────────────────────
 
 function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }) {
+  const { t } = useLanguage()
   const today = new Date()
+
+  const categoryKeys: Record<string, 'cat_productivity' | 'cat_development' | 'cat_design' | 'cat_marketing' | 'cat_communication' | 'cat_storage' | 'cat_other'> = {
+    productivity: 'cat_productivity',
+    development:  'cat_development',
+    design:       'cat_design',
+    marketing:    'cat_marketing',
+    communication:'cat_communication',
+    storage:      'cat_storage',
+    other:        'cat_other',
+  }
 
   if (subscriptions.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-        <p className="text-gray-400 dark:text-gray-500 mb-4">Nemas jos nijedan servis.</p>
+        <p className="text-gray-400 dark:text-gray-500 mb-4">{t('no_services_empty')}</p>
         <Link
           href="/subscriptions/new"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
         >
           <PlusCircle className="w-4 h-4" />
-          Dodaj prvi servis
+          {t('add_first_btn')}
         </Link>
       </div>
     )
@@ -71,12 +73,12 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Naziv</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Kategorija</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Cijena</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Datum obnove</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Status</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Koristenje</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_name')}</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_category')}</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_price')}</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_renewal')}</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_status')}</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_usage')}</th>
               <th className="py-3 px-4"></th>
             </tr>
           </thead>
@@ -111,12 +113,12 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
                     </div>
                   </td>
                   <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
-                    {s.category ? categoryLabels[s.category] : '-'}
+                    {s.category && categoryKeys[s.category] ? t(categoryKeys[s.category]) : '-'}
                   </td>
                   <td className="py-3 px-4 text-gray-700 dark:text-gray-200 font-medium">
                     {s.currency} {s.price}
                     <span className="text-gray-400 dark:text-gray-500 font-normal text-xs ml-1">
-                      /{s.billing_cycle === 'monthly' ? 'mj' : s.billing_cycle === 'yearly' ? 'god' : s.billing_cycle}
+                      /{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : s.billing_cycle === 'yearly' ? t('cycle_short_yearly') : s.billing_cycle}
                     </span>
                   </td>
                   <td className="py-3 px-4">
@@ -127,7 +129,7 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
                         </span>
                         {daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 30 && (
                           <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-red-500' : 'text-yellow-500'}`}>
-                            ({daysUntilRenewal === 0 ? 'danas' : `${daysUntilRenewal}d`})
+                            ({daysUntilRenewal === 0 ? t('today') : `${daysUntilRenewal}d`})
                           </span>
                         )}
                       </div>
@@ -140,7 +142,7 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">
-                        Uredi
+                        {t('edit')}
                       </Link>
                       <DeleteButton id={s.id} name={s.name} />
                     </div>
@@ -159,14 +161,15 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
 
 export default function SubscriptionsPage() {
   const { data: subscriptions, isLoading } = useSubscriptions()
+  const { t } = useLanguage()
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Servisi</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('services_title')}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            {isLoading || !subscriptions ? 'Učitavanje...' : `${subscriptions.length} ukupno`}
+            {isLoading || !subscriptions ? t('services_loading') : `${subscriptions.length} ${t('services_total')}`}
           </p>
         </div>
         <Link
@@ -174,7 +177,7 @@ export default function SubscriptionsPage() {
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
         >
           <PlusCircle className="w-4 h-4" />
-          Dodaj servis
+          {t('add_service_btn')}
         </Link>
       </div>
 

@@ -1,26 +1,33 @@
+'use client'
+
 import Badge from '@/components/ui/Badge'
 import { SubscriptionStatus, UsageStatus } from '@/types/subscription'
+import { useLanguage } from '@/components/LanguageProvider'
 
 export function StatusBadge({ status }: { status: SubscriptionStatus }) {
-  const map: Record<SubscriptionStatus, { label: string; variant: 'green' | 'blue' | 'red' | 'yellow' | 'purple' }> = {
-    active: { label: 'Aktivna', variant: 'green' },
-    trial: { label: 'Trial', variant: 'blue' },
-    cancelled: { label: 'Otkazana', variant: 'red' },
-    inactive: { label: 'Neaktivna', variant: 'yellow' },
-    overlimit: { label: 'Overlimit - Review Needed', variant: 'purple' },
+  const { t } = useLanguage()
+
+  const map: Record<SubscriptionStatus, { labelKey: 'status_active' | 'status_trial' | 'status_cancelled' | 'status_inactive' | 'status_overlimit'; variant: 'green' | 'blue' | 'red' | 'yellow' | 'purple' }> = {
+    active:    { labelKey: 'status_active',    variant: 'green'  },
+    trial:     { labelKey: 'status_trial',     variant: 'blue'   },
+    cancelled: { labelKey: 'status_cancelled', variant: 'red'    },
+    inactive:  { labelKey: 'status_inactive',  variant: 'yellow' },
+    overlimit: { labelKey: 'status_overlimit', variant: 'purple' },
   }
-  const { label, variant } = map[status] ?? { label: status, variant: 'gray' as const }
-  return <Badge variant={variant}>{label}</Badge>
+  const { labelKey, variant } = map[status] ?? { labelKey: 'status_active', variant: 'gray' as const }
+  return <Badge variant={variant}>{t(labelKey)}</Badge>
 }
 
 export function UsageBadge({ usage }: { usage: UsageStatus }) {
-  const map: Record<UsageStatus, { label: string; variant: 'green' | 'blue' | 'yellow' | 'red' | 'orange' }> = {
-    high: { label: 'Visoko', variant: 'green' },
-    medium: { label: 'Srednje', variant: 'blue' },
-    low: { label: 'Nisko', variant: 'yellow' },
-    unused: { label: 'Ne koristi se', variant: 'red' },
-    underutilized: { label: 'Underutilized', variant: 'orange' },
+  const { t } = useLanguage()
+
+  const map: Record<UsageStatus, { labelKey: 'usage_high' | 'usage_medium' | 'usage_low' | 'usage_unused' | 'usage_underutilized'; variant: 'green' | 'blue' | 'yellow' | 'red' | 'orange' }> = {
+    high:          { labelKey: 'usage_high',          variant: 'green'  },
+    medium:        { labelKey: 'usage_medium',        variant: 'blue'   },
+    low:           { labelKey: 'usage_low',           variant: 'yellow' },
+    unused:        { labelKey: 'usage_unused',        variant: 'red'    },
+    underutilized: { labelKey: 'usage_underutilized', variant: 'orange' },
   }
-  const { label, variant } = map[usage] ?? { label: usage, variant: 'gray' as const }
-  return <Badge variant={variant}>{label}</Badge>
+  const { labelKey, variant } = map[usage] ?? { labelKey: 'usage_medium', variant: 'gray' as const }
+  return <Badge variant={variant}>{t(labelKey)}</Badge>
 }

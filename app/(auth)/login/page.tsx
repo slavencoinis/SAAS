@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Layers } from 'lucide-react'
+import { useLanguage } from '@/components/LanguageProvider'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -21,7 +23,7 @@ export default function LoginPage() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError('Pogresni podaci za prijavu.')
+      setError(t('login_error'))
       setLoading(false)
       return
     }
@@ -49,7 +51,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SaaS Manager</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Prijavi se na svoj racun</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t('login_subtitle')}</p>
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
@@ -71,7 +73,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lozinka</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login_password')}</label>
               <input
                 type="password"
                 value={password}
@@ -86,14 +88,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors mt-2"
             >
-              {loading ? 'Prijavljivanje...' : 'Prijavi se'}
+              {loading ? t('login_loading') : t('login_btn')}
             </button>
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
-            Nemas racun?{' '}
+            {t('login_no_account')}{' '}
             <Link href="/signup" className="text-indigo-500 font-medium hover:underline">
-              Registruj se
+              {t('login_register')}
             </Link>
           </p>
         </div>

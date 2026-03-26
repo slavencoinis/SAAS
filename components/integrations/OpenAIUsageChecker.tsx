@@ -5,6 +5,7 @@ import { runOpenAIUsageCheck, OpenAICheckResult } from '@/app/actions/openaiChec
 import { OpenAIUsageData, OVERLIMIT_THRESHOLD_PERCENT } from '@/lib/integrations/openai/checkUsage'
 import { format } from 'date-fns'
 import { AlertTriangle, CheckCircle, RefreshCw, Zap } from 'lucide-react'
+import { useLanguage } from '@/components/LanguageProvider'
 
 function UsageBar({ percent }: { percent: number }) {
   const capped = Math.min(percent, 100)
@@ -82,6 +83,7 @@ function UsageResultRow({ usage }: { usage: OpenAIUsageData }) {
 export default function OpenAIUsageChecker() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<OpenAICheckResult | null>(null)
+  const { t } = useLanguage()
 
   async function handleCheck() {
     setLoading(true)
@@ -116,17 +118,16 @@ export default function OpenAIUsageChecker() {
           className="flex shrink-0 items-center gap-2 rounded-lg bg-black dark:bg-white px-4 py-2 text-sm font-medium text-white dark:text-black transition-colors hover:bg-gray-800 dark:hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-          {loading ? 'Provjerava...' : 'Simuliraj provjeru'}
+          {loading ? t('openai_checking') : t('openai_check_btn')}
         </button>
       </div>
 
       {/* Description */}
       {!result && !loading && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Simulira poziv ka OpenAI Usage API-ju i provjerava potrošnju tokena za tekući period naplate.
-          Servisi čija je potrošnja ≥{' '}
-          <span className="font-medium text-gray-700 dark:text-gray-200">{OVERLIMIT_THRESHOLD_PERCENT}%</span> limita
-          automatski dobijaju status{' '}
+          {t('openai_desc_prefix')}{' '}
+          <span className="font-medium text-gray-700 dark:text-gray-200">{OVERLIMIT_THRESHOLD_PERCENT}%</span>{' '}
+          {t('openai_desc_suffix')}{' '}
           <span className="rounded bg-red-100 dark:bg-red-900/40 px-1.5 py-0.5 text-xs font-semibold text-red-800 dark:text-red-300">
             Overlimit - Review Needed
           </span>.
@@ -154,9 +155,9 @@ export default function OpenAIUsageChecker() {
           {result.noSubscriptionsFound && (
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-8 text-center">
               <Zap className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Nema OpenAI servisa</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('openai_no_services')}</p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Dodaj servis čiji naziv sadrži "OpenAI", "ChatGPT", "GPT-4" itd.
+                {t('openai_no_hint')}
               </p>
             </div>
           )}
@@ -176,21 +177,21 @@ export default function OpenAIUsageChecker() {
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
                     <span className="font-semibold">{result.markedOverlimit}</span>{' '}
-                    {result.markedOverlimit === 1 ? 'servis označen' : 'servisa označeno'} kao{' '}
+                    {result.markedOverlimit === 1 ? t('openai_overlimit_one') : t('openai_overlimit_many')} {t('openai_overlimit_as')}{' '}
                     <span className="font-semibold">Overlimit - Review Needed</span> i ažurirane u bazi.
                   </span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4 shrink-0" />
-                  <span>Svi OpenAI servisi su ispod {OVERLIMIT_THRESHOLD_PERCENT}% limita.</span>
+                  <span>{t('openai_all_ok_prefix')} {OVERLIMIT_THRESHOLD_PERCENT}{t('openai_all_ok_suffix')}</span>
                 </>
               )}
             </div>
           )}
 
           <p className="text-right text-xs text-gray-400 dark:text-gray-600">
-            Provjereno: {format(new Date(), 'dd.MM.yyyy HH:mm')}
+            {t('openai_checked_at')} {format(new Date(), 'dd.MM.yyyy HH:mm')}
           </p>
         </div>
       )}
