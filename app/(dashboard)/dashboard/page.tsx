@@ -4,7 +4,7 @@ import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { differenceInDays } from 'date-fns'
-import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
+import { getDisplayRenewal, formatRenewal, BILLING_STATUSES, paidThisYear } from '@/lib/renewalUtils'
 import { CreditCard, TrendingUp, AlertTriangle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
@@ -75,12 +75,12 @@ function ContentSkeleton() {
 
 function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
   const { t } = useLanguage()
-  const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
+  const active = subscriptions.filter((s) => (BILLING_STATUSES as readonly string[]).includes(s.status))
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
-    if (s.status === 'cancelled') return false
+    if (!(BILLING_STATUSES as readonly string[]).includes(s.status)) return false
     const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
     if (!d) return false
     const days = differenceInDays(d, today)
@@ -115,13 +115,16 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
 
 function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) {
   const { t } = useLanguage()
-  const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
+  const active = subscriptions.filter((s) => (BILLING_STATUSES as readonly string[]).includes(s.status))
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const yearlyTotal = monthlyTotal * 12
+  // Services that are stopped (paused/cancelled) — count what was paid this year
+  const stopped = subscriptions.filter((s) => s.status === 'cancelled' || s.status === 'paused' || s.status === 'inactive')
+  const paidThisYearTotal = stopped.reduce((sum, s) => sum + paidThisYear(s.price, s.billing_cycle, s.start_date), 0)
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
-    if (s.status === 'cancelled') return false
+    if (!(BILLING_STATUSES as readonly string[]).includes(s.status)) return false
     const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
     if (!d) return false
     const days = differenceInDays(d, today)
@@ -252,17 +255,29 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
       </div>
 
       {subscriptions.length > 0 && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4">
-            <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">{t('yearly_cost')}</p>
-            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">€{yearlyTotal.toFixed(2)}</p>
-            <p className="text-xs text-indigo-500 dark:text-indigo-500 mt-1">{active.length} {t('active_services_count')}</p>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4">
+            {/* Yearly cost — active only */}
+            <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4">
+              <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">{t('yearly_cost')}</p>
+              <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">€{yearlyTotal.toFixed(2)}</p>
+              <p className="text-xs text-indigo-500 dark:text-indigo-500 mt-1">{active.length} {t('active_services_count')}</p>
+            </div>
+            {/* Monthly cost — active only */}
+            <div className="bg-green-50 dark:bg-green-950/50 border border-green-100 dark:border-green-900 rounded-xl p-4">
+              <p className="text-sm font-medium text-green-900 dark:text-green-300">{t('monthly_cost_total')}</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400 mt-1">€{monthlyTotal.toFixed(2)}</p>
+              <p className="text-xs text-green-500 dark:text-green-500 mt-1">~€{(monthlyTotal / (active.length || 1)).toFixed(2)} / {t('active_services_count')}</p>
+            </div>
           </div>
-          <div className="bg-green-50 dark:bg-green-950/50 border border-green-100 dark:border-green-900 rounded-xl p-4">
-            <p className="text-sm font-medium text-green-900 dark:text-green-300">{t('monthly_cost_total')}</p>
-            <p className="text-2xl font-bold text-green-700 dark:text-green-400 mt-1">€{monthlyTotal.toFixed(2)}</p>
-            <p className="text-xs text-green-500 dark:text-green-500 mt-1">~€{(monthlyTotal / (active.length || 1)).toFixed(2)} / {t('active_services_count')}</p>
-          </div>
+
+          {/* Paid this year for stopped services */}
+          {paidThisYearTotal > 0 && (
+            <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between">
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('paid_this_year')}</p>
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">€{paidThisYearTotal.toFixed(2)}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

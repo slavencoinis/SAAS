@@ -1,4 +1,4 @@
-import { addMonths, addYears, addWeeks, isBefore, parseISO, startOfDay, format } from 'date-fns'
+import { addMonths, addYears, addWeeks, isBefore, parseISO, startOfDay, startOfYear, format, differenceInMonths, differenceInWeeks } from 'date-fns'
 
 /**
  * Given a start date and billing cycle, returns the next upcoming renewal date.
@@ -54,4 +54,40 @@ export function formatRenewal(date: Date | null): string {
 /** ISO string (yyyy-MM-dd) from a Date, for storing in DB / form state */
 export function toISODate(date: Date): string {
   return format(date, 'yyyy-MM-dd')
+}
+
+/**
+ * Statuses that count toward active billing.
+ */
+export const BILLING_STATUSES = ['active', 'trial', 'overlimit'] as const
+
+/**
+ * Calculate how much was paid this calendar year for a subscription.
+ * Used for cancelled/paused services to show past spend without projecting future.
+ */
+export function paidThisYear(price: number, billingCycle: string, startDate: string | null | undefined): number {
+  if (!startDate || billingCycle === 'one-time') return 0
+
+  const today = startOfDay(new Date())
+  const yearStart = startOfYear(today)
+  const start = parseISO(startDate)
+
+  // Effective start for this year's calculation
+  const from = isBefore(start, yearStart) ? yearStart : start
+
+  if (!isBefore(from, today)) return 0 // started in the future
+
+  if (billingCycle === 'monthly') {
+    const months = differenceInMonths(today, from)
+    return (months + 1) * price  // +1 because the current month was charged
+  }
+  if (billingCycle === 'weekly') {
+    const weeks = differenceInWeeks(today, from)
+    return (weeks + 1) * price
+  }
+  if (billingCycle === 'yearly') {
+    // One yearly charge if the subscription was active at any point this year
+    return price
+  }
+  return 0
 }

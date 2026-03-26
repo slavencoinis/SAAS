@@ -1,5 +1,5 @@
 export type BillingCycle = 'monthly' | 'yearly' | 'weekly' | 'one-time'
-export type SubscriptionStatus = 'active' | 'inactive' | 'cancelled' | 'trial' | 'overlimit'
+export type SubscriptionStatus = 'active' | 'paused' | 'cancelled' | 'trial' | 'overlimit' | 'inactive'
 export type UsageStatus = 'high' | 'medium' | 'low' | 'unused' | 'underutilized'
 export type Category =
   | 'productivity'

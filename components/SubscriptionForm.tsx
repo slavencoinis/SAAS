@@ -218,7 +218,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           <select className={inputCls} value={form.status} onChange={(e) => set('status', e.target.value)}>
             <option value="active">{t('status_active')}</option>
             <option value="trial">{t('status_trial')}</option>
-            <option value="inactive">{t('status_inactive')}</option>
+            <option value="paused">{t('status_paused')}</option>
             <option value="cancelled">{t('status_cancelled')}</option>
             <option value="overlimit">{t('status_overlimit')}</option>
           </select>

@@ -7,9 +7,10 @@ import { useLanguage } from '@/components/LanguageProvider'
 export function StatusBadge({ status }: { status: SubscriptionStatus }) {
   const { t } = useLanguage()
 
-  const map: Record<SubscriptionStatus, { labelKey: 'status_active' | 'status_trial' | 'status_cancelled' | 'status_inactive' | 'status_overlimit'; variant: 'green' | 'blue' | 'red' | 'yellow' | 'purple' }> = {
+  const map: Record<SubscriptionStatus, { labelKey: 'status_active' | 'status_trial' | 'status_cancelled' | 'status_inactive' | 'status_overlimit' | 'status_paused'; variant: 'green' | 'blue' | 'red' | 'yellow' | 'purple' | 'orange' }> = {
     active:    { labelKey: 'status_active',    variant: 'green'  },
     trial:     { labelKey: 'status_trial',     variant: 'blue'   },
+    paused:    { labelKey: 'status_paused',    variant: 'yellow' },
     cancelled: { labelKey: 'status_cancelled', variant: 'red'    },
     inactive:  { labelKey: 'status_inactive',  variant: 'yellow' },
     overlimit: { labelKey: 'status_overlimit', variant: 'purple' },
