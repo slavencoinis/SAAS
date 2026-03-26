@@ -83,7 +83,7 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
   })
 
   const stats = [
-    { label: 'Aktivne pretplate',  value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
+    { label: 'Aktivni servisi',     value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
     { label: 'Misecni trošak',     value: `€${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
     { label: 'Istice uskoro (30d)', value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
     { label: 'Ne koriste se',      value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
@@ -130,7 +130,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
             Istice uskoro
           </h2>
           {expiringSoon.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Nema pretplata koje isticu u sljedecih 30 dana.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Nema servisa koji isticu u sljedecih 30 dana.</p>
           ) : (
             <div className="space-y-3">
               {expiringSoon.slice(0, 5).map((s) => {
@@ -161,10 +161,10 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <XCircle className="w-4 h-4 text-red-500" />
-            Pretplate koje ne koristis
+            Servisi koje ne koristis
           </h2>
           {unused.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">Sve aktivne pretplate se koriste.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">Svi aktivni servisi se koriste.</p>
           ) : (
             <div className="space-y-3">
               {unused.map((s) => (
@@ -194,14 +194,14 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
       {/* Recent */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Sve pretplate</h2>
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Svi servisi</h2>
           <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">Vidi sve</Link>
         </div>
         {subscriptions.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">Nemas jos nijednu pretplatu.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">Nemas jos nijedan servis.</p>
             <Link href="/subscriptions/new" className="inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
-              Dodaj prvu pretplatu
+              Dodaj prvi servis
             </Link>
           </div>
         ) : (
@@ -247,7 +247,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
             <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">€{yearlyTotal.toFixed(2)}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} aktivnih pretplata</p>
+            <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} aktivnih servisa</p>
             <p className="text-xs text-indigo-500 mt-1">~€{monthlyTotal.toFixed(2)}/mj</p>
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS pretplata</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS servisa</p>
       </div>
 
       {isLoading || !subscriptions ? (

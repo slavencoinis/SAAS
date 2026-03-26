@@ -53,13 +53,13 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
   if (subscriptions.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-        <p className="text-gray-400 dark:text-gray-500 mb-4">Nemas jos nijednu pretplatu.</p>
+        <p className="text-gray-400 dark:text-gray-500 mb-4">Nemas jos nijedan servis.</p>
         <Link
           href="/subscriptions/new"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
         >
           <PlusCircle className="w-4 h-4" />
-          Dodaj prvu pretplatu
+          Dodaj prvi servis
         </Link>
       </div>
     )
@@ -164,7 +164,7 @@ export default function SubscriptionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pretplate</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Servisi</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
             {isLoading || !subscriptions ? 'Učitavanje...' : `${subscriptions.length} ukupno`}
           </p>
@@ -174,7 +174,7 @@ export default function SubscriptionsPage() {
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
         >
           <PlusCircle className="w-4 h-4" />
-          Dodaj pretplatu
+          Dodaj servis
         </Link>
       </div>
 

@@ -18,8 +18,8 @@ import {
 
 const navItems = [
   { href: '/dashboard',        label: 'Dashboard',       icon: LayoutDashboard },
-  { href: '/subscriptions',    label: 'Pretplate',        icon: CreditCard      },
-  { href: '/subscriptions/new',label: 'Dodaj pretplatu',  icon: PlusCircle      },
+  { href: '/subscriptions',    label: 'Servisi',          icon: CreditCard      },
+  { href: '/subscriptions/new',label: 'Dodaj servis',     icon: PlusCircle      },
   { href: '/integrations',     label: 'Integracije',      icon: Plug            },
 ]
 

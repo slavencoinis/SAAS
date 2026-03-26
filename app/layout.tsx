@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'SaaS Manager',
-  description: 'Upravljaj svim SaaS pretplatama na jednom mjestu',
+  description: 'Upravljaj svim SaaS servisima na jednom mjestu',
 }
 
 /**

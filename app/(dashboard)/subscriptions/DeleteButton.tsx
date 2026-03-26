@@ -8,7 +8,7 @@ export default function DeleteButton({ id, name }: { id: string; name: string })
   const [loading, setLoading] = useState(false)
 
   const handleDelete = async () => {
-    if (!confirm(`Obrisi pretplatu "${name}"?`)) return
+    if (!confirm(`Obrisi servis "${name}"?`)) return
     setLoading(true)
     const supabase = createClient()
     await supabase.from('subscriptions').delete().eq('id', id)

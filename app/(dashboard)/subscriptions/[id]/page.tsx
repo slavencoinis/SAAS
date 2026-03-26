@@ -75,7 +75,7 @@ export default function EditSubscriptionPage({ params }: { params: Promise<{ id:
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Uredi pretplatu</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Uredi servis</h1>
           {subscription && (
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">{subscription.name}</p>
           )}
@@ -86,7 +86,7 @@ export default function EditSubscriptionPage({ params }: { params: Promise<{ id:
         <FormSkeleton />
       ) : !subscription ? (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-          <p className="text-gray-400 dark:text-gray-500 mb-4">Pretplata nije pronađena.</p>
+          <p className="text-gray-400 dark:text-gray-500 mb-4">Servis nije pronađen.</p>
           <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">
             Nazad na listu
           </Link>

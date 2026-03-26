@@ -124,7 +124,7 @@ export default function OpenAIUsageChecker() {
       {!result && !loading && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Simulira poziv ka OpenAI Usage API-ju i provjerava potrošnju tokena za tekući period naplate.
-          Pretplate čija je potrošnja ≥{' '}
+          Servisi čija je potrošnja ≥{' '}
           <span className="font-medium text-gray-700 dark:text-gray-200">{OVERLIMIT_THRESHOLD_PERCENT}%</span> limita
           automatski dobijaju status{' '}
           <span className="rounded bg-red-100 dark:bg-red-900/40 px-1.5 py-0.5 text-xs font-semibold text-red-800 dark:text-red-300">
@@ -154,9 +154,9 @@ export default function OpenAIUsageChecker() {
           {result.noSubscriptionsFound && (
             <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-8 text-center">
               <Zap className="mx-auto mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Nema OpenAI pretplata</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Nema OpenAI servisa</p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Dodaj pretplatu čiji naziv sadrži "OpenAI", "ChatGPT", "GPT-4" itd.
+                Dodaj servis čiji naziv sadrži "OpenAI", "ChatGPT", "GPT-4" itd.
               </p>
             </div>
           )}
@@ -176,14 +176,14 @@ export default function OpenAIUsageChecker() {
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
                     <span className="font-semibold">{result.markedOverlimit}</span>{' '}
-                    {result.markedOverlimit === 1 ? 'pretplata označena' : 'pretplate označene'} kao{' '}
+                    {result.markedOverlimit === 1 ? 'servis označen' : 'servisa označeno'} kao{' '}
                     <span className="font-semibold">Overlimit - Review Needed</span> i ažurirane u bazi.
                   </span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4 shrink-0" />
-                  <span>Sve OpenAI pretplate su ispod {OVERLIMIT_THRESHOLD_PERCENT}% limita.</span>
+                  <span>Svi OpenAI servisi su ispod {OVERLIMIT_THRESHOLD_PERCENT}% limita.</span>
                 </>
               )}
             </div>

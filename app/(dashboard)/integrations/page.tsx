@@ -18,7 +18,7 @@ export default function IntegrationsPage() {
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
         <p className="text-sm text-blue-700 dark:text-blue-300">
           Svi API pozivi su trenutno <span className="font-semibold">simulirani (mock)</span> —
-          rezultati su deterministički generirani iz ID-a pretplate.
+          rezultati su deterministički generirani iz ID-a servisa.
           Da povežeš pravi API, zamijeni tijelo funkcije u{' '}
           <code className="rounded bg-blue-100 dark:bg-blue-900/50 px-1 py-0.5 font-mono text-xs">
             lib/integrations/

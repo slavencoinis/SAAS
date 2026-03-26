@@ -136,7 +136,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           className={inputCls}
           value={form.description ?? ''}
           onChange={(e) => set('description', e.target.value)}
-          placeholder="Kratki opis svrhe pretplate"
+          placeholder="Kratki opis svrhe servisa"
         />
       </div>
 
@@ -271,7 +271,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           disabled={loading}
           className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'Cuvanje...' : subscription ? 'Sacuvaj izmjene' : 'Dodaj pretplatu'}
+          {loading ? 'Cuvanje...' : subscription ? 'Sacuvaj izmjene' : 'Dodaj servis'}
         </button>
         <button
           type="button"
