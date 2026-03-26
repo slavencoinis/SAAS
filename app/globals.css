@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 /* ── Dark mode: triggered by .dark class on <html> ────────────────────────── */
-@custom-variant dark (&:where(.dark, .dark *));
+/* .dark & generates .dark .dark:class {} — specificity (0,2,0) always beats  */
+/* bg-white (0,1,0) regardless of CSS order in production build                */
+@custom-variant dark (.dark &);
 
 /* ── Base CSS variables ───────────────────────────────────────────────────── */
 :root {
