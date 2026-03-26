@@ -1,3 +1,6 @@
+export const unstable_instant = { prefetch: 'static' }
+
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Subscription } from '@/types/subscription'
@@ -17,7 +20,36 @@ const categoryLabels: Record<string, string> = {
   other: 'Ostalo',
 }
 
-export default async function SubscriptionsPage() {
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SubscriptionsTableSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
+      <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-6">
+        {['Naziv', 'Kategorija', 'Cijena', 'Datum obnove', 'Status', 'Koristenje'].map((h) => (
+          <div key={h} className="h-3 w-20 rounded bg-gray-200 dark:bg-gray-700" />
+        ))}
+      </div>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex gap-6 px-4 py-4 border-b border-gray-100 dark:border-gray-800">
+          <div className="space-y-1.5">
+            <div className="h-3.5 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-2.5 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+          </div>
+          <div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-3.5 w-16 rounded bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-3.5 w-24 rounded bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-5 w-16 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-5 w-16 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Dynamic content ──────────────────────────────────────────────────────────
+
+async function SubscriptionsList() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -31,12 +63,121 @@ export default async function SubscriptionsPage() {
   const subscriptions: Subscription[] = subs ?? []
   const today = new Date()
 
+  if (subscriptions.length === 0) {
+    return (
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+        <p className="text-gray-400 dark:text-gray-500 mb-4">Nemas jos nijednu pretplatu.</p>
+        <Link
+          href="/subscriptions/new"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Dodaj prvu pretplatu
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+            <tr>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Naziv</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Kategorija</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Cijena</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Datum obnove</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Status</th>
+              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Koristenje</th>
+              <th className="py-3 px-4"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            {subscriptions.map((s) => {
+              const daysUntilRenewal = s.renewal_date
+                ? differenceInDays(parseISO(s.renewal_date), today)
+                : null
+              const isExpiringSoon =
+                daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
+
+              return (
+                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <Link
+                          href={`/subscriptions/${s.id}`}
+                          className="font-medium text-gray-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400"
+                        >
+                          {s.name}
+                        </Link>
+                        {s.description && (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[180px]">{s.description}</p>
+                        )}
+                      </div>
+                      {s.url && (
+                        <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-gray-300 dark:text-gray-600 hover:text-indigo-500">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
+                    {s.category ? categoryLabels[s.category] : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-gray-700 dark:text-gray-200 font-medium">
+                    {s.currency} {s.price}
+                    <span className="text-gray-400 dark:text-gray-500 font-normal text-xs ml-1">
+                      /{s.billing_cycle === 'monthly' ? 'mj' : s.billing_cycle === 'yearly' ? 'god' : s.billing_cycle}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    {s.renewal_date ? (
+                      <div>
+                        <span className={isExpiringSoon ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200'}>
+                          {format(parseISO(s.renewal_date), 'dd.MM.yyyy')}
+                        </span>
+                        {daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 30 && (
+                          <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-red-500' : 'text-yellow-500'}`}>
+                            ({daysUntilRenewal === 0 ? 'danas' : `${daysUntilRenewal}d`})
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 dark:text-gray-600">-</span>
+                    )}
+                  </td>
+                  <td className="py-3 px-4"><StatusBadge status={s.status} /></td>
+                  <td className="py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">
+                        Uredi
+                      </Link>
+                      <DeleteButton id={s.id} name={s.name} />
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+// ─── Page shell (renders instantly) ──────────────────────────────────────────
+
+export default function SubscriptionsPage() {
   return (
     <div className="space-y-6">
+      {/* Static header — part of the prerendered shell */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Pretplate</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">{subscriptions.length} ukupno</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Upravljaj svim pretplatama</p>
         </div>
         <Link
           href="/subscriptions/new"
@@ -47,105 +188,10 @@ export default async function SubscriptionsPage() {
         </Link>
       </div>
 
-      {subscriptions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-          <p className="text-gray-400 dark:text-gray-500 mb-4">Nemas jos nijednu pretplatu.</p>
-          <Link
-            href="/subscriptions/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Dodaj prvu pretplatu
-          </Link>
-        </div>
-      ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
-                <tr>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Naziv</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Kategorija</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Cijena</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Datum obnove</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Status</th>
-                  <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">Koristenje</th>
-                  <th className="py-3 px-4"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {subscriptions.map((s) => {
-                  const daysUntilRenewal = s.renewal_date
-                    ? differenceInDays(parseISO(s.renewal_date), today)
-                    : null
-                  const isExpiringSoon =
-                    daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
-
-                  return (
-                    <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <Link
-                              href={`/subscriptions/${s.id}`}
-                              className="font-medium text-gray-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400"
-                            >
-                              {s.name}
-                            </Link>
-                            {s.description && (
-                              <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[180px]">{s.description}</p>
-                            )}
-                          </div>
-                          {s.url && (
-                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-gray-300 dark:text-gray-600 hover:text-indigo-500">
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
-                        {s.category ? categoryLabels[s.category] : '-'}
-                      </td>
-                      <td className="py-3 px-4 text-gray-700 dark:text-gray-200 font-medium">
-                        {s.currency} {s.price}
-                        <span className="text-gray-400 dark:text-gray-500 font-normal text-xs ml-1">
-                          /{s.billing_cycle === 'monthly' ? 'mj' : s.billing_cycle === 'yearly' ? 'god' : s.billing_cycle}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        {s.renewal_date ? (
-                          <div>
-                            <span className={isExpiringSoon ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200'}>
-                              {format(parseISO(s.renewal_date), 'dd.MM.yyyy')}
-                            </span>
-                            {daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 30 && (
-                              <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-red-500' : 'text-yellow-500'}`}>
-                                ({daysUntilRenewal === 0 ? 'danas' : `${daysUntilRenewal}d`})
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-gray-400 dark:text-gray-600">-</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4"><StatusBadge status={s.status} /></td>
-                      <td className="py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">
-                            Uredi
-                          </Link>
-                          <DeleteButton id={s.id} name={s.name} />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      {/* Table streams in with skeleton while Supabase responds */}
+      <Suspense fallback={<SubscriptionsTableSkeleton />}>
+        <SubscriptionsList />
+      </Suspense>
     </div>
   )
 }

@@ -1,3 +1,6 @@
+export const unstable_instant = { prefetch: 'static' }
+
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Subscription } from '@/types/subscription'
@@ -14,7 +17,114 @@ function getMonthlyEquivalent(price: number, cycle: string): number {
   return price
 }
 
-export default async function DashboardPage() {
+// ─── Skeletons ────────────────────────────────────────────────────────────────
+
+function StatsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800" />
+            <div className="space-y-2">
+              <div className="h-3 w-24 rounded bg-gray-100 dark:bg-gray-800" />
+              <div className="h-6 w-12 rounded bg-gray-100 dark:bg-gray-800" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function TableSkeleton() {
+  return (
+    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-3">
+      <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex gap-4">
+          <div className="h-4 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+          <div className="h-4 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+          <div className="h-4 w-24 rounded bg-gray-100 dark:bg-gray-800" />
+          <div className="h-4 w-16 rounded bg-gray-100 dark:bg-gray-800" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PanelsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {[0, 1].map((i) => (
+        <div key={i} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 animate-pulse space-y-4">
+          <div className="h-4 w-40 rounded bg-gray-100 dark:bg-gray-800" />
+          {Array.from({ length: 3 }).map((_, j) => (
+            <div key={j} className="flex justify-between">
+              <div className="space-y-1">
+                <div className="h-3 w-28 rounded bg-gray-100 dark:bg-gray-800" />
+                <div className="h-3 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+              </div>
+              <div className="h-6 w-12 rounded-full bg-gray-100 dark:bg-gray-800" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Dynamic data components ──────────────────────────────────────────────────
+
+async function DashboardStats() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: subs } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('renewal_date', { ascending: true })
+
+  const subscriptions: Subscription[] = subs ?? []
+  const active = subscriptions.filter((s) => s.status === 'active' || s.status === 'trial')
+  const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
+  const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
+  const today = new Date()
+  const expiringSoon = subscriptions.filter((s) => {
+    if (!s.renewal_date || s.status === 'cancelled') return false
+    const days = differenceInDays(parseISO(s.renewal_date), today)
+    return days >= 0 && days <= 30
+  })
+
+  const stats = [
+    { label: 'Aktivne pretplate', value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
+    { label: 'Misecni trošak',    value: `$${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
+    { label: 'Istice uskoro (30d)',value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
+    { label: 'Ne koriste se',     value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
+  ]
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {stats.map(({ label, value, icon: Icon, color, bg }) => (
+        <div key={label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
+          <div className="flex items-center gap-3">
+            <div className={`${bg} p-2.5 rounded-lg`}>
+              <Icon className={`w-5 h-5 ${color}`} />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+async function DashboardPanels() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -30,7 +140,6 @@ export default async function DashboardPage() {
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const yearlyTotal = monthlyTotal * 12
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
-
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
     if (!s.renewal_date || s.status === 'cancelled') return false
@@ -38,37 +147,8 @@ export default async function DashboardPage() {
     return days >= 0 && days <= 30
   })
 
-  const stats = [
-    { label: 'Aktivne pretplate', value: active.length,              icon: CreditCard,   color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
-    { label: 'Misecni trošak',    value: `$${monthlyTotal.toFixed(2)}`, icon: TrendingUp, color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'  },
-    { label: 'Istice uskoro (30d)',value: expiringSoon.length,        icon: AlertTriangle,color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
-    { label: 'Ne koriste se',     value: unused.length,              icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
-  ]
-
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS pretplata</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, color, bg }) => (
-          <div key={label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5">
-            <div className="flex items-center gap-3">
-              <div className={`${bg} p-2.5 rounded-lg`}>
-                <Icon className={`w-5 h-5 ${color}`} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
+    <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Expiring soon */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
@@ -120,9 +200,7 @@ export default async function DashboardPage() {
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">${s.price}/{s.billing_cycle === 'monthly' ? 'mj' : 'god'}</p>
                   </div>
-                  <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">
-                    Uredi
-                  </Link>
+                  <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">Uredi</Link>
                 </div>
               ))}
             </div>
@@ -139,9 +217,6 @@ export default async function DashboardPage() {
           )}
         </div>
       </div>
-
-      {/* Adobe checker */}
-      <AdobeUsageChecker />
 
       {/* Recent */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
@@ -204,6 +279,33 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+    </>
+  )
+}
+
+// ─── Page shell (renders instantly) ──────────────────────────────────────────
+
+export default function DashboardPage() {
+  return (
+    <div className="space-y-8">
+      {/* Static header — part of the prerendered shell */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Pregled svih SaaS pretplata</p>
+      </div>
+
+      {/* Stats stream in immediately once Supabase responds */}
+      <Suspense fallback={<StatsSkeleton />}>
+        <DashboardStats />
+      </Suspense>
+
+      {/* Panels + table stream in together */}
+      <Suspense fallback={<><PanelsSkeleton /><TableSkeleton /></>}>
+        <DashboardPanels />
+      </Suspense>
+
+      {/* Adobe checker is client component, no change needed */}
+      <AdobeUsageChecker />
     </div>
   )
 }
