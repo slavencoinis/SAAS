@@ -84,7 +84,7 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
     const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
     if (!d) return false
     const days = differenceInDays(d, today)
-    return days >= 0 && days <= 30
+    return days >= 0 && days <= 7
   })
 
   const stats = [
@@ -125,7 +125,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
     const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
     if (!d) return false
     const days = differenceInDays(d, today)
-    return days >= 0 && days <= 30
+    return days >= 0 && days <= 7
   })
 
   return (
