@@ -15,7 +15,7 @@ const defaultValues: SubscriptionInsert = {
   description: '',
   url: '',
   price: 0,
-  currency: 'USD',
+  currency: 'EUR',
   billing_cycle: 'monthly',
   start_date: '',
   renewal_date: '',
@@ -156,8 +156,8 @@ export default function SubscriptionForm({ subscription }: Props) {
         <div>
           <label className={labelCls}>Valuta</label>
           <select className={inputCls} value={form.currency} onChange={(e) => set('currency', e.target.value)}>
-            <option>USD</option>
             <option>EUR</option>
+            <option>USD</option>
             <option>BAM</option>
             <option>RSD</option>
             <option>GBP</option>
