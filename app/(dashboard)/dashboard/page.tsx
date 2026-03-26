@@ -84,7 +84,7 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
 
   const stats = [
     { label: 'Aktivne pretplate',  value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
-    { label: 'Misecni trošak',     value: `$${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
+    { label: 'Misecni trošak',     value: `€${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
     { label: 'Istice uskoro (30d)', value: expiringSoon.length,          icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
     { label: 'Ne koriste se',      value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
   ]
@@ -171,7 +171,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                 <div key={s.id} className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">${s.price}/{s.billing_cycle === 'monthly' ? 'mj' : 'god'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{s.currency} {s.price}/{s.billing_cycle === 'monthly' ? 'mj' : 'god'}</p>
                   </div>
                   <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">Uredi</Link>
                 </div>
@@ -183,7 +183,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Potencijalna ustedevina:{' '}
                 <span className="font-semibold text-red-600 dark:text-red-400">
-                  ${unused.reduce((s, sub) => s + getMonthlyEquivalent(sub.price, sub.billing_cycle), 0).toFixed(2)}/mj
+                  €{unused.reduce((s, sub) => s + getMonthlyEquivalent(sub.price, sub.billing_cycle), 0).toFixed(2)}/mj
                 </span>
               </p>
             </div>
@@ -244,11 +244,11 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
         <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">Godisnji trošak</p>
-            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">${yearlyTotal.toFixed(2)}</p>
+            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400">€{yearlyTotal.toFixed(2)}</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-indigo-600 dark:text-indigo-400">{active.length} aktivnih pretplata</p>
-            <p className="text-xs text-indigo-500 mt-1">~${monthlyTotal.toFixed(2)}/mj</p>
+            <p className="text-xs text-indigo-500 mt-1">~€{monthlyTotal.toFixed(2)}/mj</p>
           </div>
         </div>
       )}
