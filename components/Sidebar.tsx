@@ -16,6 +16,7 @@ import {
   Moon,
   Monitor,
   X,
+  Settings,
 } from 'lucide-react'
 import { OptiStackMark } from '@/components/OptiStackLogo'
 import { disableDemoMode, isDemoMode } from '@/lib/demo'
@@ -47,6 +48,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
     { href: '/subscriptions',     label: t('nav_services'),     icon: CreditCard      },
     { href: '/subscriptions/new', label: t('nav_add_service'),  icon: PlusCircle      },
     { href: '/integrations',      label: t('nav_integrations'), icon: Plug            },
+    { href: '/settings',          label: t('nav_settings'),     icon: Settings        },
   ]
 
   const handleLogout = async () => {

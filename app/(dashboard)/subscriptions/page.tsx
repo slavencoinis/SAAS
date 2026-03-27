@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
+import CsvExportButton from '@/components/CsvExportButton'
+import CsvImportButton from '@/components/CsvImportButton'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -458,13 +460,17 @@ export default function SubscriptionsPage() {
                   : `${total} ${t('services_total')}`}
           </p>
         </div>
-        <Link
-          href="/subscriptions/new"
-          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shrink-0"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">{t('add_service_btn')}</span>
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <CsvImportButton />
+          <CsvExportButton subscriptions={subscriptions ?? []} />
+          <Link
+            href="/subscriptions/new"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('add_service_btn')}</span>
+          </Link>
+        </div>
       </div>
 
       {/* ── Search + Filters ────────────────────────────────────────────────── */}
