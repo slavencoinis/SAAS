@@ -181,6 +181,17 @@ export const translations = {
     chart_no_data:        'Nema podataka za prikaz',
     chart_per_month:      '€/mj',
     chart_total_tooltip:  'Ukupno',
+
+    // ── Search & Filter ───────────────────────────────────────────────────────
+    search_placeholder:   'Pretraži po nazivu ili opisu...',
+    filter_status:        'Status',
+    filter_category:      'Kategorija',
+    filter_billing:       'Naplata',
+    filter_all:           'Svi',
+    filter_reset:         'Poništi filtere',
+    filter_showing:       'prikazano',
+    filter_of:            'od',
+    filter_no_results:    'Nema rezultata za zadane filtere.',
   },
 
   en: {
@@ -363,6 +374,17 @@ export const translations = {
     chart_no_data:        'No data to display',
     chart_per_month:      '€/mo',
     chart_total_tooltip:  'Total',
+
+    // ── Search & Filter ───────────────────────────────────────────────────────
+    search_placeholder:   'Search by name or description...',
+    filter_status:        'Status',
+    filter_category:      'Category',
+    filter_billing:       'Billing',
+    filter_all:           'All',
+    filter_reset:         'Reset filters',
+    filter_showing:       'showing',
+    filter_of:            'of',
+    filter_no_results:    'No results for the selected filters.',
   },
 } satisfies Record<Language, Record<string, string>>
 

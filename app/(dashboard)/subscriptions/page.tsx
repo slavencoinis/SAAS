@@ -1,14 +1,27 @@
 'use client'
 
+import { useMemo, useState } from 'react'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { differenceInDays } from 'date-fns'
 import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
 import Link from 'next/link'
-import { PlusCircle, ExternalLink } from 'lucide-react'
+import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
+
+// ─── Category key map ─────────────────────────────────────────────────────────
+
+const categoryKeys: Record<string, 'cat_productivity' | 'cat_development' | 'cat_design' | 'cat_marketing' | 'cat_communication' | 'cat_storage' | 'cat_other'> = {
+  productivity:  'cat_productivity',
+  development:   'cat_development',
+  design:        'cat_design',
+  marketing:     'cat_marketing',
+  communication: 'cat_communication',
+  storage:       'cat_storage',
+  other:         'cat_other',
+}
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -39,31 +52,21 @@ function TableSkeleton() {
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 
-function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }) {
+function SubscriptionsTable({ subscriptions, onReset }: { subscriptions: Subscription[]; onReset: () => void }) {
   const { t } = useLanguage()
   const today = new Date()
-
-  const categoryKeys: Record<string, 'cat_productivity' | 'cat_development' | 'cat_design' | 'cat_marketing' | 'cat_communication' | 'cat_storage' | 'cat_other'> = {
-    productivity: 'cat_productivity',
-    development:  'cat_development',
-    design:       'cat_design',
-    marketing:    'cat_marketing',
-    communication:'cat_communication',
-    storage:      'cat_storage',
-    other:        'cat_other',
-  }
 
   if (subscriptions.length === 0) {
     return (
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-        <p className="text-gray-400 dark:text-gray-500 mb-4">{t('no_services_empty')}</p>
-        <Link
-          href="/subscriptions/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+        <Search className="w-8 h-8 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
+        <p className="text-gray-400 dark:text-gray-500 mb-3 text-sm">{t('filter_no_results')}</p>
+        <button
+          onClick={onReset}
+          className="text-sm text-indigo-500 hover:underline"
         >
-          <PlusCircle className="w-4 h-4" />
-          {t('add_first_btn')}
-        </Link>
+          {t('filter_reset')}
+        </button>
       </div>
     )
   }
@@ -87,8 +90,7 @@ function SubscriptionsTable({ subscriptions }: { subscriptions: Subscription[] }
             {subscriptions.map((s) => {
               const renewalDate = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
               const daysUntilRenewal = renewalDate ? differenceInDays(renewalDate, today) : null
-              const isExpiringSoon =
-                daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
+              const isExpiringSoon = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
 
               return (
                 <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
@@ -163,13 +165,55 @@ export default function SubscriptionsPage() {
   const { data: subscriptions, isLoading } = useSubscriptions()
   const { t } = useLanguage()
 
+  const [query,          setQuery]          = useState('')
+  const [statusFilter,   setStatusFilter]   = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [billingFilter,  setBillingFilter]  = useState('all')
+
+  const isFiltered = query !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || billingFilter !== 'all'
+
+  const resetFilters = () => {
+    setQuery('')
+    setStatusFilter('all')
+    setCategoryFilter('all')
+    setBillingFilter('all')
+  }
+
+  const filtered = useMemo(() => {
+    if (!subscriptions) return []
+    const q = query.toLowerCase()
+    return subscriptions.filter((s) => {
+      if (q && !s.name.toLowerCase().includes(q) && !(s.description ?? '').toLowerCase().includes(q)) return false
+      if (statusFilter   !== 'all' && s.status        !== statusFilter)   return false
+      if (categoryFilter !== 'all' && (s.category ?? 'other') !== categoryFilter) return false
+      if (billingFilter  !== 'all' && s.billing_cycle !== billingFilter)  return false
+      return true
+    })
+  }, [subscriptions, query, statusFilter, categoryFilter, billingFilter])
+
+  const selectCls = [
+    'h-9 pl-3 pr-8 rounded-lg text-sm appearance-none cursor-pointer',
+    'border border-gray-200 dark:border-gray-700',
+    'bg-white dark:bg-gray-800',
+    'text-gray-700 dark:text-gray-200',
+    'focus:outline-none focus:ring-2 focus:ring-indigo-500',
+  ].join(' ')
+
+  const total = subscriptions?.length ?? 0
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('services_title')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            {isLoading || !subscriptions ? t('services_loading') : `${subscriptions.length} ${t('services_total')}`}
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+            {isLoading || !subscriptions
+              ? t('services_loading')
+              : isFiltered
+                ? `${filtered.length} ${t('filter_showing')} · ${total} ${t('services_total')}`
+                : `${total} ${t('services_total')}`}
           </p>
         </div>
         <Link
@@ -181,10 +225,101 @@ export default function SubscriptionsPage() {
         </Link>
       </div>
 
-      {isLoading || !subscriptions
-        ? <TableSkeleton />
-        : <SubscriptionsTable subscriptions={subscriptions} />
-      }
+      {/* ── Search + Filters ────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-2 items-center">
+        {/* Search */}
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('search_placeholder')}
+            className={[
+              'w-full h-9 pl-9 pr-8 rounded-lg text-sm',
+              'border border-gray-200 dark:border-gray-700',
+              'bg-white dark:bg-gray-800',
+              'text-gray-900 dark:text-gray-100',
+              'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+              'focus:outline-none focus:ring-2 focus:ring-indigo-500',
+            ].join(' ')}
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Divider icon */}
+        <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
+
+        {/* Status filter */}
+        <div className="relative">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_status')}: {t('filter_all')}</option>
+            <option value="active">{t('status_active')}</option>
+            <option value="trial">{t('status_trial')}</option>
+            <option value="paused">{t('status_paused')}</option>
+            <option value="cancelled">{t('status_cancelled')}</option>
+            <option value="overlimit">{t('status_overlimit')}</option>
+          </select>
+        </div>
+
+        {/* Category filter */}
+        <div className="relative">
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_category')}: {t('filter_all')}</option>
+            <option value="productivity">{t('cat_productivity')}</option>
+            <option value="development">{t('cat_development')}</option>
+            <option value="design">{t('cat_design')}</option>
+            <option value="marketing">{t('cat_marketing')}</option>
+            <option value="communication">{t('cat_communication')}</option>
+            <option value="storage">{t('cat_storage')}</option>
+            <option value="other">{t('cat_other')}</option>
+          </select>
+        </div>
+
+        {/* Billing filter */}
+        <div className="relative">
+          <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
+            <option value="monthly">{t('billing_monthly')}</option>
+            <option value="yearly">{t('billing_yearly')}</option>
+            <option value="weekly">{t('billing_weekly')}</option>
+            <option value="one-time">{t('billing_once')}</option>
+          </select>
+        </div>
+
+        {/* Reset */}
+        {isFiltered && (
+          <button
+            onClick={resetFilters}
+            className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            {t('filter_reset')}
+          </button>
+        )}
+      </div>
+
+      {/* ── Table ───────────────────────────────────────────────────────────── */}
+      {isLoading || !subscriptions ? (
+        <TableSkeleton />
+      ) : subscriptions.length === 0 ? (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
+          <p className="text-gray-400 dark:text-gray-500 mb-4">{t('no_services_empty')}</p>
+          <Link
+            href="/subscriptions/new"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+          >
+            <PlusCircle className="w-4 h-4" />
+            {t('add_first_btn')}
+          </Link>
+        </div>
+      ) : (
+        <SubscriptionsTable subscriptions={filtered} onReset={resetFilters} />
+      )}
     </div>
   )
 }
