@@ -4,12 +4,61 @@ import { useMemo, useState } from 'react'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
-import { differenceInDays } from 'date-fns'
+import { differenceInDays, parseISO } from 'date-fns'
 import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
 import Link from 'next/link'
-import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal } from 'lucide-react'
+import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type SortKey = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage'
+type SortDir = 'asc' | 'desc'
+
+// ─── Sort helpers ─────────────────────────────────────────────────────────────
+
+const STATUS_ORDER: Record<string, number> = {
+  active: 0, trial: 1, overlimit: 2, paused: 3, cancelled: 4, inactive: 5,
+}
+const USAGE_ORDER: Record<string, number> = {
+  high: 0, medium: 1, low: 2, unused: 3, underutilized: 4,
+}
+
+function toMonthly(price: number, cycle: string): number {
+  if (cycle === 'yearly')   return price / 12
+  if (cycle === 'weekly')   return price * 4.333
+  if (cycle === 'one-time') return 0
+  return price
+}
+
+function sortSubscriptions(list: Subscription[], key: SortKey, dir: SortDir): Subscription[] {
+  const sorted = [...list].sort((a, b) => {
+    switch (key) {
+      case 'name':
+        return a.name.localeCompare(b.name)
+      case 'category':
+        return (a.category ?? 'other').localeCompare(b.category ?? 'other')
+      case 'price':
+        return toMonthly(a.price, a.billing_cycle) - toMonthly(b.price, b.billing_cycle)
+      case 'renewal': {
+        const da = getDisplayRenewal(a.renewal_date, a.start_date, a.billing_cycle)
+        const db = getDisplayRenewal(b.renewal_date, b.start_date, b.billing_cycle)
+        if (!da && !db) return 0
+        if (!da) return 1
+        if (!db) return -1
+        return da.getTime() - db.getTime()
+      }
+      case 'status':
+        return (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9)
+      case 'usage':
+        return (USAGE_ORDER[a.usage_status] ?? 9) - (USAGE_ORDER[b.usage_status] ?? 9)
+      default:
+        return 0
+    }
+  })
+  return dir === 'desc' ? sorted.reverse() : sorted
+}
 
 // ─── Category key map ─────────────────────────────────────────────────────────
 
@@ -21,6 +70,37 @@ const categoryKeys: Record<string, 'cat_productivity' | 'cat_development' | 'cat
   communication: 'cat_communication',
   storage:       'cat_storage',
   other:         'cat_other',
+}
+
+// ─── Sortable header cell ──────────────────────────────────────────────────────
+
+function SortTh({
+  label, sortKey, active, dir, onClick,
+}: {
+  label: string
+  sortKey: SortKey
+  active: boolean
+  dir: SortDir
+  onClick: (k: SortKey) => void
+}) {
+  return (
+    <th
+      className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 select-none"
+    >
+      <button
+        onClick={() => onClick(sortKey)}
+        className="flex items-center gap-1 hover:text-gray-900 dark:hover:text-white transition-colors group"
+      >
+        {label}
+        <span className={active ? 'text-indigo-500' : 'text-gray-300 dark:text-gray-600 group-hover:text-gray-400'}>
+          {active
+            ? dir === 'asc' ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />
+            : <ChevronsUpDown className="w-3 h-3" />
+          }
+        </span>
+      </button>
+    </th>
+  )
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -52,7 +132,17 @@ function TableSkeleton() {
 
 // ─── Table ────────────────────────────────────────────────────────────────────
 
-function SubscriptionsTable({ subscriptions, onReset }: { subscriptions: Subscription[]; onReset: () => void }) {
+function SubscriptionsTable({
+  subscriptions,
+  sortKey, sortDir, onSort,
+  onReset,
+}: {
+  subscriptions: Subscription[]
+  sortKey: SortKey
+  sortDir: SortDir
+  onSort: (k: SortKey) => void
+  onReset: () => void
+}) {
   const { t } = useLanguage()
   const today = new Date()
 
@@ -61,10 +151,7 @@ function SubscriptionsTable({ subscriptions, onReset }: { subscriptions: Subscri
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
         <Search className="w-8 h-8 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
         <p className="text-gray-400 dark:text-gray-500 mb-3 text-sm">{t('filter_no_results')}</p>
-        <button
-          onClick={onReset}
-          className="text-sm text-indigo-500 hover:underline"
-        >
+        <button onClick={onReset} className="text-sm text-indigo-500 hover:underline">
           {t('filter_reset')}
         </button>
       </div>
@@ -77,20 +164,20 @@ function SubscriptionsTable({ subscriptions, onReset }: { subscriptions: Subscri
         <table className="w-full text-sm">
           <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_name')}</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_category')}</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_price')}</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_renewal')}</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_status')}</th>
-              <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_usage')}</th>
-              <th className="py-3 px-4"></th>
+              <SortTh label={t('col_name')}     sortKey="name"     active={sortKey === 'name'}     dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_category')} sortKey="category" active={sortKey === 'category'} dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_price')}    sortKey="price"    active={sortKey === 'price'}    dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_renewal')}  sortKey="renewal"  active={sortKey === 'renewal'}  dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_status')}   sortKey="status"   active={sortKey === 'status'}   dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_usage')}    sortKey="usage"    active={sortKey === 'usage'}    dir={sortDir} onClick={onSort} />
+              <th className="py-3 px-4" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
             {subscriptions.map((s) => {
-              const renewalDate = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+              const renewalDate      = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
               const daysUntilRenewal = renewalDate ? differenceInDays(renewalDate, today) : null
-              const isExpiringSoon = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
+              const isExpiringSoon   = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
 
               return (
                 <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
@@ -169,6 +256,8 @@ export default function SubscriptionsPage() {
   const [statusFilter,   setStatusFilter]   = useState('all')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [billingFilter,  setBillingFilter]  = useState('all')
+  const [sortKey,        setSortKey]        = useState<SortKey>('renewal')
+  const [sortDir,        setSortDir]        = useState<SortDir>('asc')
 
   const isFiltered = query !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || billingFilter !== 'all'
 
@@ -179,17 +268,27 @@ export default function SubscriptionsPage() {
     setBillingFilter('all')
   }
 
+  const handleSort = (key: SortKey) => {
+    if (key === sortKey) {
+      setSortDir((d) => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
   const filtered = useMemo(() => {
     if (!subscriptions) return []
     const q = query.toLowerCase()
-    return subscriptions.filter((s) => {
+    const result = subscriptions.filter((s) => {
       if (q && !s.name.toLowerCase().includes(q) && !(s.description ?? '').toLowerCase().includes(q)) return false
-      if (statusFilter   !== 'all' && s.status        !== statusFilter)   return false
-      if (categoryFilter !== 'all' && (s.category ?? 'other') !== categoryFilter) return false
-      if (billingFilter  !== 'all' && s.billing_cycle !== billingFilter)  return false
+      if (statusFilter   !== 'all' && s.status                    !== statusFilter)   return false
+      if (categoryFilter !== 'all' && (s.category ?? 'other')     !== categoryFilter) return false
+      if (billingFilter  !== 'all' && s.billing_cycle             !== billingFilter)  return false
       return true
     })
-  }, [subscriptions, query, statusFilter, categoryFilter, billingFilter])
+    return sortSubscriptions(result, sortKey, sortDir)
+  }, [subscriptions, query, statusFilter, categoryFilter, billingFilter, sortKey, sortDir])
 
   const selectCls = [
     'h-9 pl-3 pr-8 rounded-lg text-sm appearance-none cursor-pointer',
@@ -227,7 +326,6 @@ export default function SubscriptionsPage() {
 
       {/* ── Search + Filters ────────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-2 items-center">
-        {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           <input
@@ -251,47 +349,36 @@ export default function SubscriptionsPage() {
           )}
         </div>
 
-        {/* Divider icon */}
         <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
 
-        {/* Status filter */}
-        <div className="relative">
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
-            <option value="all">{t('filter_status')}: {t('filter_all')}</option>
-            <option value="active">{t('status_active')}</option>
-            <option value="trial">{t('status_trial')}</option>
-            <option value="paused">{t('status_paused')}</option>
-            <option value="cancelled">{t('status_cancelled')}</option>
-            <option value="overlimit">{t('status_overlimit')}</option>
-          </select>
-        </div>
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
+          <option value="all">{t('filter_status')}: {t('filter_all')}</option>
+          <option value="active">{t('status_active')}</option>
+          <option value="trial">{t('status_trial')}</option>
+          <option value="paused">{t('status_paused')}</option>
+          <option value="cancelled">{t('status_cancelled')}</option>
+          <option value="overlimit">{t('status_overlimit')}</option>
+        </select>
 
-        {/* Category filter */}
-        <div className="relative">
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
-            <option value="all">{t('filter_category')}: {t('filter_all')}</option>
-            <option value="productivity">{t('cat_productivity')}</option>
-            <option value="development">{t('cat_development')}</option>
-            <option value="design">{t('cat_design')}</option>
-            <option value="marketing">{t('cat_marketing')}</option>
-            <option value="communication">{t('cat_communication')}</option>
-            <option value="storage">{t('cat_storage')}</option>
-            <option value="other">{t('cat_other')}</option>
-          </select>
-        </div>
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
+          <option value="all">{t('filter_category')}: {t('filter_all')}</option>
+          <option value="productivity">{t('cat_productivity')}</option>
+          <option value="development">{t('cat_development')}</option>
+          <option value="design">{t('cat_design')}</option>
+          <option value="marketing">{t('cat_marketing')}</option>
+          <option value="communication">{t('cat_communication')}</option>
+          <option value="storage">{t('cat_storage')}</option>
+          <option value="other">{t('cat_other')}</option>
+        </select>
 
-        {/* Billing filter */}
-        <div className="relative">
-          <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
-            <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
-            <option value="monthly">{t('billing_monthly')}</option>
-            <option value="yearly">{t('billing_yearly')}</option>
-            <option value="weekly">{t('billing_weekly')}</option>
-            <option value="one-time">{t('billing_once')}</option>
-          </select>
-        </div>
+        <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
+          <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
+          <option value="monthly">{t('billing_monthly')}</option>
+          <option value="yearly">{t('billing_yearly')}</option>
+          <option value="weekly">{t('billing_weekly')}</option>
+          <option value="one-time">{t('billing_once')}</option>
+        </select>
 
-        {/* Reset */}
         {isFiltered && (
           <button
             onClick={resetFilters}
@@ -318,7 +405,13 @@ export default function SubscriptionsPage() {
           </Link>
         </div>
       ) : (
-        <SubscriptionsTable subscriptions={filtered} onReset={resetFilters} />
+        <SubscriptionsTable
+          subscriptions={filtered}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          onSort={handleSort}
+          onReset={resetFilters}
+        />
       )}
     </div>
   )
