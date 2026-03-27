@@ -1,13 +1,13 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { differenceInDays, parseISO } from 'date-fns'
 import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
 import Link from 'next/link'
-import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
+import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
 
@@ -16,6 +16,8 @@ import DeleteButton from './DeleteButton'
 type SortKey    = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage'
 type SortDir    = 'asc' | 'desc'
 type ViewPeriod = 'monthly' | 'yearly'
+
+const PAGE_SIZE = 20
 
 // ─── Price normalisation ──────────────────────────────────────────────────────
 
@@ -130,6 +132,78 @@ function SortTh({
   )
 }
 
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+function Pagination({ page, totalPages, total, filteredTotal, isFiltered, from, to, onChange }: {
+  page: number
+  totalPages: number
+  total: number
+  filteredTotal: number
+  isFiltered: boolean
+  from: number
+  to: number
+  onChange: (p: number) => void
+}) {
+  if (totalPages <= 1 && !isFiltered) return null
+
+  // Build page number list with ellipsis
+  const pages: (number | '…')[] = []
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i)
+  } else {
+    pages.push(1)
+    if (page > 3) pages.push('…')
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i)
+    if (page < totalPages - 2) pages.push('…')
+    pages.push(totalPages)
+  }
+
+  const btnCls = (active: boolean) =>
+    `min-w-[32px] h-8 px-2 rounded-md text-xs font-medium transition-colors ${
+      active
+        ? 'bg-indigo-600 text-white'
+        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+    }`
+
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
+      {/* Info */}
+      <p className="text-xs text-gray-500 dark:text-gray-400">
+        {from}–{to} {isFiltered ? `/ ${filteredTotal}` : ''} · {total} ukupno
+      </p>
+
+      {/* Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => onChange(page - 1)}
+            disabled={page === 1}
+            className="h-8 w-8 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {pages.map((p, i) =>
+            p === '…' ? (
+              <span key={`ellipsis-${i}`} className="min-w-[32px] h-8 flex items-center justify-center text-xs text-gray-400">…</span>
+            ) : (
+              <button key={p} onClick={() => onChange(p)} className={btnCls(p === page)}>{p}</button>
+            )
+          )}
+
+          <button
+            onClick={() => onChange(page + 1)}
+            disabled={page === totalPages}
+            className="h-8 w-8 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function TableSkeleton() {
@@ -163,6 +237,7 @@ function SubscriptionsTable({
   subscriptions,
   sortKey, sortDir, onSort,
   viewPeriod,
+  pagination,
   onReset,
 }: {
   subscriptions: Subscription[]
@@ -170,6 +245,7 @@ function SubscriptionsTable({
   sortDir: SortDir
   onSort: (k: SortKey) => void
   viewPeriod: ViewPeriod
+  pagination: React.ReactNode
   onReset: () => void
 }) {
   const { t } = useLanguage()
@@ -280,6 +356,7 @@ function SubscriptionsTable({
           </tbody>
         </table>
       </div>
+      {pagination}
     </div>
   )
 }
@@ -297,8 +374,12 @@ export default function SubscriptionsPage() {
   const [sortKey,        setSortKey]        = useState<SortKey>('renewal')
   const [sortDir,        setSortDir]        = useState<SortDir>('asc')
   const [viewPeriod,     setViewPeriod]     = useState<ViewPeriod>('monthly')
+  const [page,           setPage]           = useState(1)
 
   const isFiltered = query !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || billingFilter !== 'all'
+
+  // Reset to page 1 whenever filters or sort change
+  useEffect(() => { setPage(1) }, [query, statusFilter, categoryFilter, billingFilter, sortKey, sortDir])
 
   const resetFilters = () => {
     setQuery('')
@@ -329,6 +410,25 @@ export default function SubscriptionsPage() {
     return sortSubscriptions(result, sortKey, sortDir)
   }, [subscriptions, query, statusFilter, categoryFilter, billingFilter, sortKey, sortDir])
 
+  const totalPages    = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const safePage      = Math.min(page, totalPages)
+  const from          = filtered.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1
+  const to            = Math.min(safePage * PAGE_SIZE, filtered.length)
+  const paginated     = filtered.slice(from - 1, to)
+
+  const paginationNode = (
+    <Pagination
+      page={safePage}
+      totalPages={totalPages}
+      total={subscriptions?.length ?? 0}
+      filteredTotal={filtered.length}
+      isFiltered={isFiltered}
+      from={from}
+      to={to}
+      onChange={setPage}
+    />
+  )
+
   const selectCls = [
     'h-9 pl-3 pr-8 rounded-lg text-sm appearance-none cursor-pointer',
     'border border-gray-200 dark:border-gray-700',
@@ -351,7 +451,9 @@ export default function SubscriptionsPage() {
               ? t('services_loading')
               : isFiltered
                 ? `${filtered.length} ${t('filter_showing')} · ${total} ${t('services_total')}`
-                : `${total} ${t('services_total')}`}
+                : totalPages > 1
+                  ? `${from}–${to} / ${total} ${t('services_total')}`
+                  : `${total} ${t('services_total')}`}
           </p>
         </div>
         <Link
@@ -469,11 +571,12 @@ export default function SubscriptionsPage() {
         </div>
       ) : (
         <SubscriptionsTable
-          subscriptions={filtered}
+          subscriptions={paginated}
           sortKey={sortKey}
           sortDir={sortDir}
           onSort={handleSort}
           viewPeriod={viewPeriod}
+          pagination={paginationNode}
           onReset={resetFilters}
         />
       )}
