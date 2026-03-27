@@ -22,7 +22,15 @@ create policy "Users can update their own settings"
   on public.user_settings for update
   using (auth.uid() = user_id);
 
--- Auto-update updated_at
+-- Auto-update updated_at helper (create if not exists)
+create or replace function public.handle_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
 create trigger set_user_settings_updated_at
   before update on public.user_settings
   for each row execute procedure public.handle_updated_at();
