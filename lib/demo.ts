@@ -9,7 +9,7 @@ export function enableDemoMode(): void {
 /** Clear demo cookie (client-side only) */
 export function disableDemoMode(): void {
   if (typeof document === 'undefined') return
-  document.cookie = `${DEMO_COOKIE}=; path=/; max-age=0; path=/`
+  document.cookie = `${DEMO_COOKIE}=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`
 }
 
 /** Check if demo mode is active (client-side only) */

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FlaskConical, X } from 'lucide-react'
 import { isDemoMode, disableDemoMode } from '@/lib/demo'
@@ -9,7 +8,6 @@ import { useLanguage } from '@/components/LanguageProvider'
 
 export default function DemoBanner() {
   const [show, setShow] = useState(false)
-  const router = useRouter()
   const { t } = useLanguage()
 
   useEffect(() => {
@@ -20,7 +18,11 @@ export default function DemoBanner() {
 
   const handleExit = () => {
     disableDemoMode()
-    router.push('/login')
+    // Use full-page navigation so the browser sends the cleared cookie
+    // to the server. router.push() is SPA navigation and can hit the
+    // route cache, causing the proxy to still see the old demo cookie
+    // and redirect back to /dashboard.
+    window.location.replace('/login')
   }
 
   return (
@@ -30,13 +32,12 @@ export default function DemoBanner() {
         <span className="truncate font-medium">{t('demo_banner')}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
-        <Link
-          href="/signup"
-          onClick={disableDemoMode}
+        <button
+          onClick={() => { disableDemoMode(); window.location.replace('/signup') }}
           className="px-3 py-1 bg-white text-amber-600 dark:text-amber-700 text-xs font-semibold rounded-md hover:bg-amber-50 transition-colors"
         >
           {t('demo_create_account')}
-        </Link>
+        </button>
         <button
           onClick={handleExit}
           className="flex items-center gap-1 px-3 py-1 bg-amber-600 dark:bg-amber-700 text-white text-xs font-semibold rounded-md hover:bg-amber-700 dark:hover:bg-amber-800 transition-colors"
