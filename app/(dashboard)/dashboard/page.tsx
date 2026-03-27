@@ -281,7 +281,7 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                       {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : t('cycle_short_yearly')}
                     </p>
                   </div>
-                  <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">{t('edit')}</Link>
+                  <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">{t('edit')}</Link>
                 </div>
               ))}
             </div>

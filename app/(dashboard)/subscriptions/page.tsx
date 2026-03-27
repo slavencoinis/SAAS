@@ -344,7 +344,7 @@ function SubscriptionsTable({
                   <td className="py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <Link href={`/subscriptions/${s.id}`} className="text-xs text-indigo-500 hover:underline">
+                      <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">
                         {t('edit')}
                       </Link>
                       <DeleteButton id={s.id} name={s.name} />
