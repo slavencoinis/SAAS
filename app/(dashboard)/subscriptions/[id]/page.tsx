@@ -77,7 +77,7 @@ export default function ViewSubscriptionPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-5 max-w-2xl w-full">
 
       {/* ── Back + title ─────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
@@ -142,7 +142,7 @@ export default function ViewSubscriptionPage({ params }: { params: Promise<{ id:
             </div>
 
             {/* Main fields grid */}
-            <div className="px-6 py-5 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-5">
+            <div className="px-4 sm:px-6 py-5 grid grid-cols-2 md:grid-cols-3 gap-x-4 sm:gap-x-6 gap-y-5">
               <Field
                 icon={DollarSign}
                 label={t('form_price')}

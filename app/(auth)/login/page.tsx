@@ -6,12 +6,13 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { FlaskConical } from 'lucide-react'
 import { OptiStackMark } from '@/components/OptiStackLogo'
+import { Language } from '@/lib/i18n'
 import { useLanguage } from '@/components/LanguageProvider'
 import { enableDemoMode } from '@/lib/demo'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { t } = useLanguage()
+  const { t, lang, setLang } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -49,8 +50,28 @@ export default function LoginPage() {
   ].join(' ')
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-8">
       <div className="w-full max-w-md">
+
+        {/* Language toggle */}
+        <div className="flex justify-center mb-6">
+          <div className="flex gap-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm">
+            {(['sr', 'en'] as Language[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                  lang === l
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                }`}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <OptiStackMark size={56} />

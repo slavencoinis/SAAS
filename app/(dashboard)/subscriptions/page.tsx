@@ -104,17 +104,18 @@ const categoryKeys: Record<string, 'cat_productivity' | 'cat_development' | 'cat
 // ─── Sortable header cell ──────────────────────────────────────────────────────
 
 function SortTh({
-  label, sortKey, active, dir, onClick,
+  label, sortKey, active, dir, onClick, className = '',
 }: {
   label: string
   sortKey: SortKey
   active: boolean
   dir: SortDir
   onClick: (k: SortKey) => void
+  className?: string
 }) {
   return (
     <th
-      className="text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 select-none"
+      className={`text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 select-none ${className}`}
     >
       <button
         onClick={() => onClick(sortKey)}
@@ -271,11 +272,11 @@ function SubscriptionsTable({
           <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <SortTh label={t('col_name')}     sortKey="name"     active={sortKey === 'name'}     dir={sortDir} onClick={onSort} />
-              <SortTh label={t('col_category')} sortKey="category" active={sortKey === 'category'} dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_category')} sortKey="category" active={sortKey === 'category'} dir={sortDir} onClick={onSort} className="hidden md:table-cell" />
               <SortTh label={t('col_price')}    sortKey="price"    active={sortKey === 'price'}    dir={sortDir} onClick={onSort} />
-              <SortTh label={t('col_renewal')}  sortKey="renewal"  active={sortKey === 'renewal'}  dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_renewal')}  sortKey="renewal"  active={sortKey === 'renewal'}  dir={sortDir} onClick={onSort} className="hidden sm:table-cell" />
               <SortTh label={t('col_status')}   sortKey="status"   active={sortKey === 'status'}   dir={sortDir} onClick={onSort} />
-              <SortTh label={t('col_usage')}    sortKey="usage"    active={sortKey === 'usage'}    dir={sortDir} onClick={onSort} />
+              <SortTh label={t('col_usage')}    sortKey="usage"    active={sortKey === 'usage'}    dir={sortDir} onClick={onSort} className="hidden lg:table-cell" />
               <th className="py-3 px-4" />
             </tr>
           </thead>
@@ -307,7 +308,7 @@ function SubscriptionsTable({
                       )}
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
+                  <td className="hidden md:table-cell py-3 px-4 text-gray-500 dark:text-gray-400">
                     {s.category && categoryKeys[s.category] ? t(categoryKeys[s.category]) : '-'}
                   </td>
                   <td className="py-3 px-4">
@@ -317,7 +318,7 @@ function SubscriptionsTable({
                         viewPeriod, t('cycle_short_monthly'), t('cycle_short_yearly'),
                       )
                       return (
-                        <span className="font-medium text-gray-700 dark:text-gray-200">
+                        <span className="font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
                           {approx && <span className="text-gray-400 dark:text-gray-500 font-normal mr-0.5">≈</span>}
                           {amount}
                           <span className="text-gray-400 dark:text-gray-500 font-normal text-xs">{suffix}</span>
@@ -325,9 +326,9 @@ function SubscriptionsTable({
                       )
                     })()}
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="hidden sm:table-cell py-3 px-4">
                     {renewalDate ? (
-                      <div>
+                      <div className="whitespace-nowrap">
                         <span className={isExpiringSoon ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200'}>
                           {formatRenewal(renewalDate)}
                         </span>
@@ -342,7 +343,7 @@ function SubscriptionsTable({
                     )}
                   </td>
                   <td className="py-3 px-4"><StatusBadge status={s.status} /></td>
-                  <td className="py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
+                  <td className="hidden lg:table-cell py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">
@@ -459,101 +460,107 @@ export default function SubscriptionsPage() {
         </div>
         <Link
           href="/subscriptions/new"
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
-          {t('add_service_btn')}
+          <span className="hidden sm:inline">{t('add_service_btn')}</span>
         </Link>
       </div>
 
       {/* ── Search + Filters ────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('search_placeholder')}
-            className={[
-              'w-full h-9 pl-9 pr-8 rounded-lg text-sm',
-              'border border-gray-200 dark:border-gray-700',
-              'bg-white dark:bg-gray-800',
-              'text-gray-900 dark:text-gray-100',
-              'placeholder:text-gray-400 dark:placeholder:text-gray-500',
-              'focus:outline-none focus:ring-2 focus:ring-indigo-500',
-            ].join(' ')}
-          />
-          {query && (
-            <button onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+      <div className="space-y-2">
+        {/* Row 1: search + period toggle */}
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('search_placeholder')}
+              className={[
+                'w-full h-9 pl-9 pr-8 rounded-lg text-sm',
+                'border border-gray-200 dark:border-gray-700',
+                'bg-white dark:bg-gray-800',
+                'text-gray-900 dark:text-gray-100',
+                'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+                'focus:outline-none focus:ring-2 focus:ring-indigo-500',
+              ].join(' ')}
+            />
+            {query && (
+              <button onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Period toggle */}
+          <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold shrink-0">
+            <button
+              onClick={() => setViewPeriod('monthly')}
+              className={`px-3 h-9 transition-colors ${
+                viewPeriod === 'monthly'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              /{t('cycle_short_monthly')}
+            </button>
+            <button
+              onClick={() => setViewPeriod('yearly')}
+              className={`px-3 h-9 border-l border-gray-200 dark:border-gray-700 transition-colors ${
+                viewPeriod === 'yearly'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+            >
+              /{t('cycle_short_yearly')}
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: filter selects */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
+
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_status')}: {t('filter_all')}</option>
+            <option value="active">{t('status_active')}</option>
+            <option value="trial">{t('status_trial')}</option>
+            <option value="paused">{t('status_paused')}</option>
+            <option value="cancelled">{t('status_cancelled')}</option>
+            <option value="overlimit">{t('status_overlimit')}</option>
+          </select>
+
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_category')}: {t('filter_all')}</option>
+            <option value="productivity">{t('cat_productivity')}</option>
+            <option value="development">{t('cat_development')}</option>
+            <option value="design">{t('cat_design')}</option>
+            <option value="marketing">{t('cat_marketing')}</option>
+            <option value="communication">{t('cat_communication')}</option>
+            <option value="storage">{t('cat_storage')}</option>
+            <option value="other">{t('cat_other')}</option>
+          </select>
+
+          <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
+            <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
+            <option value="monthly">{t('billing_monthly')}</option>
+            <option value="yearly">{t('billing_yearly')}</option>
+            <option value="weekly">{t('billing_weekly')}</option>
+            <option value="one-time">{t('billing_once')}</option>
+          </select>
+
+          {isFiltered && (
+            <button
+              onClick={resetFilters}
+              className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            >
               <X className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t('filter_reset')}</span>
             </button>
           )}
         </div>
-
-        {/* Period toggle */}
-        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold shrink-0">
-          <button
-            onClick={() => setViewPeriod('monthly')}
-            className={`px-3 h-9 transition-colors ${
-              viewPeriod === 'monthly'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            /{t('cycle_short_monthly')}
-          </button>
-          <button
-            onClick={() => setViewPeriod('yearly')}
-            className={`px-3 h-9 border-l border-gray-200 dark:border-gray-700 transition-colors ${
-              viewPeriod === 'yearly'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            /{t('cycle_short_yearly')}
-          </button>
-        </div>
-
-        <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
-
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
-          <option value="all">{t('filter_status')}: {t('filter_all')}</option>
-          <option value="active">{t('status_active')}</option>
-          <option value="trial">{t('status_trial')}</option>
-          <option value="paused">{t('status_paused')}</option>
-          <option value="cancelled">{t('status_cancelled')}</option>
-          <option value="overlimit">{t('status_overlimit')}</option>
-        </select>
-
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
-          <option value="all">{t('filter_category')}: {t('filter_all')}</option>
-          <option value="productivity">{t('cat_productivity')}</option>
-          <option value="development">{t('cat_development')}</option>
-          <option value="design">{t('cat_design')}</option>
-          <option value="marketing">{t('cat_marketing')}</option>
-          <option value="communication">{t('cat_communication')}</option>
-          <option value="storage">{t('cat_storage')}</option>
-          <option value="other">{t('cat_other')}</option>
-        </select>
-
-        <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
-          <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
-          <option value="monthly">{t('billing_monthly')}</option>
-          <option value="yearly">{t('billing_yearly')}</option>
-          <option value="weekly">{t('billing_weekly')}</option>
-          <option value="one-time">{t('billing_once')}</option>
-        </select>
-
-        {isFiltered && (
-          <button
-            onClick={resetFilters}
-            className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-          >
-            <X className="w-3.5 h-3.5" />
-            {t('filter_reset')}
-          </button>
-        )}
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────────── */}
