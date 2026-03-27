@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { invalidateSubscriptions } from '@/hooks/useSubscriptions'
+import { invalidateSubscriptions, demoDeleteSubscription } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
+import { isDemoMode } from '@/lib/demo'
 
 export default function DeleteButton({ id, name }: { id: string; name: string }) {
   const [loading, setLoading] = useState(false)
@@ -12,6 +13,12 @@ export default function DeleteButton({ id, name }: { id: string; name: string })
   const handleDelete = async () => {
     if (!confirm(`${t('delete_confirm')} "${name}"?`)) return
     setLoading(true)
+
+    if (isDemoMode()) {
+      demoDeleteSubscription(id)
+      return
+    }
+
     const supabase = createClient()
     await supabase.from('subscriptions').delete().eq('id', id)
     invalidateSubscriptions()

@@ -166,6 +166,14 @@ export const translations = {
     // ── Billing cycle short labels ────────────────────────────────────────────
     cycle_short_monthly: 'mj',
     cycle_short_yearly:  'god',
+
+    // ── Demo mode ─────────────────────────────────────────────────────────────
+    demo_btn:           'Probaj demo',
+    demo_btn_sub:       'bez registracije',
+    demo_banner:        'Demo mod — izmjene su privremene i ne čuvaju se u bazu',
+    demo_create_account:'Kreiraj nalog',
+    demo_exit:          'Izlaz',
+    demo_saved_locally: 'Demo mod — izmjena je privremena',
   },
 
   en: {
@@ -333,6 +341,14 @@ export const translations = {
     // ── Billing cycle short labels ────────────────────────────────────────────
     cycle_short_monthly: 'mo',
     cycle_short_yearly:  'yr',
+
+    // ── Demo mode ─────────────────────────────────────────────────────────────
+    demo_btn:           'Try demo',
+    demo_btn_sub:       'no registration needed',
+    demo_banner:        'Demo mode — changes are temporary and not saved to the database',
+    demo_create_account:'Create account',
+    demo_exit:          'Exit',
+    demo_saved_locally: 'Demo mode — change is temporary',
   },
 } satisfies Record<Language, Record<string, string>>
 

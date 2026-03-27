@@ -28,11 +28,13 @@ export async function proxy(request: NextRequest) {
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
     request.nextUrl.pathname.startsWith('/signup')
 
-  if (!user && !isAuthPage) {
+  const isDemoMode = request.cookies.get('demo_mode')?.value === '1'
+
+  if (!user && !isDemoMode && !isAuthPage) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isAuthPage) {
+  if ((user || isDemoMode) && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

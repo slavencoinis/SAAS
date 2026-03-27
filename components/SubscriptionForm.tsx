@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Subscription, SubscriptionInsert } from '@/types/subscription'
-import { invalidateSubscriptions } from '@/hooks/useSubscriptions'
+import { invalidateSubscriptions, demoUpdateSubscription, demoAddSubscription } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { calcNextRenewal, toISODate } from '@/lib/renewalUtils'
+import { isDemoMode } from '@/lib/demo'
 
 interface Props {
   subscription?: Subscription
@@ -75,10 +76,6 @@ export default function SubscriptionForm({ subscription }: Props) {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setError(t('not_logged_in')); setLoading(false); return }
-
     const payload = {
       ...form,
       price: Number(form.price),
@@ -88,6 +85,29 @@ export default function SubscriptionForm({ subscription }: Props) {
       url: form.url || null,
       notes: form.notes || null,
     }
+
+    // ── Demo mode: update in-memory cache, skip DB ──────────────────────────
+    if (isDemoMode()) {
+      const now = new Date().toISOString()
+      if (subscription) {
+        demoUpdateSubscription({ ...subscription, ...payload, updated_at: now })
+      } else {
+        demoAddSubscription({
+          ...payload,
+          id: `demo-new-${Date.now()}`,
+          user_id: 'demo',
+          created_at: now,
+          updated_at: now,
+        } as import('@/types/subscription').Subscription)
+      }
+      router.push('/subscriptions')
+      return
+    }
+
+    // ── Real mode: save to Supabase ─────────────────────────────────────────
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setError(t('not_logged_in')); setLoading(false); return }
 
     let err
     if (subscription) {

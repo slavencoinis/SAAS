@@ -3,12 +3,16 @@
 import useSWR, { mutate } from 'swr'
 import { createClient } from '@/lib/supabase/client'
 import { Subscription } from '@/types/subscription'
+import { isDemoMode } from '@/lib/demo'
+import { DEMO_SUBSCRIPTIONS } from '@/lib/demo-data'
 
 const KEY = 'subscriptions'
 
 // ─── Fetcher ──────────────────────────────────────────────────────────────────
 
 async function fetchSubscriptions(): Promise<Subscription[]> {
+  if (isDemoMode()) return DEMO_SUBSCRIPTIONS
+
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
@@ -23,6 +27,8 @@ async function fetchSubscriptions(): Promise<Subscription[]> {
 }
 
 async function fetchSubscription(id: string): Promise<Subscription | null> {
+  if (isDemoMode()) return DEMO_SUBSCRIPTIONS.find(s => s.id === id) ?? null
+
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
@@ -39,21 +45,14 @@ async function fetchSubscription(id: string): Promise<Subscription | null> {
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 
-/**
- * Sve pretplate — cache-ovano, nakon prvog učitavanja instant.
- * Ekvivalent Firebase onSnapshot ali pull-based.
- */
 export function useSubscriptions() {
   return useSWR<Subscription[]>(KEY, fetchSubscriptions, {
-    revalidateOnFocus: false,       // ne refetcha kad se vrati u tab
-    revalidateOnReconnect: true,    // refetcha kad se vrati internet
-    dedupingInterval: 5000,         // 5s window — dupli pozivi koriste cache
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000,
   })
 }
 
-/**
- * Jedna pretplata po ID-u — gleda prvo u lokalni cache liste, pa fetcha ako nema.
- */
 export function useSubscription(id: string) {
   return useSWR<Subscription | null>(
     id ? `subscription-${id}` : null,
@@ -65,11 +64,28 @@ export function useSubscription(id: string) {
   )
 }
 
-/**
- * Invalidira cache — pozovi nakon insert/update/delete
- * da se podaci osvježe bez page reloada.
- */
+// ─── Cache invalidation ────────────────────────────────────────────────────────
+
 export function invalidateSubscriptions() {
   mutate(KEY)
   mutate((key: string) => typeof key === 'string' && key.startsWith('subscription-'), undefined, { revalidate: true })
+}
+
+// ─── Demo-mode optimistic mutations (in-memory only, no DB) ──────────────────
+
+export function demoUpdateSubscription(updated: Subscription) {
+  mutate(KEY, (current: Subscription[] | undefined) =>
+    current?.map(s => s.id === updated.id ? updated : s) ?? [updated], false)
+  mutate(`subscription-${updated.id}`, updated, false)
+}
+
+export function demoAddSubscription(sub: Subscription) {
+  mutate(KEY, (current: Subscription[] | undefined) =>
+    [...(current ?? []), sub], false)
+}
+
+export function demoDeleteSubscription(id: string) {
+  mutate(KEY, (current: Subscription[] | undefined) =>
+    current?.filter(s => s.id !== id) ?? [], false)
+  mutate(`subscription-${id}`, null, false)
 }

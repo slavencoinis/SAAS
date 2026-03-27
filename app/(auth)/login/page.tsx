@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Layers } from 'lucide-react'
+import { Layers, FlaskConical } from 'lucide-react'
 import { useLanguage } from '@/components/LanguageProvider'
+import { enableDemoMode } from '@/lib/demo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -14,6 +15,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const handleDemo = () => {
+    enableDemoMode()
+    router.push('/dashboard')
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,7 +98,19 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+          <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={handleDemo}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 border-dashed border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+            >
+              <FlaskConical className="w-4 h-4" />
+              <span>{t('demo_btn')}</span>
+              <span className="text-xs text-indigo-400 dark:text-indigo-500">— {t('demo_btn_sub')}</span>
+            </button>
+          </div>
+
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
             {t('login_no_account')}{' '}
             <Link href="/signup" className="text-indigo-500 font-medium hover:underline">
               {t('login_register')}
