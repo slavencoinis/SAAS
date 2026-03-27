@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { OptiStackMark } from '@/components/OptiStackLogo'
+import { disableDemoMode, isDemoMode } from '@/lib/demo'
 
 const themeOptions: { value: ThemePreference; icon: typeof Sun; labelKey: 'theme_system' | 'theme_light' | 'theme_dark' }[] = [
   { value: 'system', icon: Monitor, labelKey: 'theme_system' },
@@ -49,10 +50,14 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
   ]
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    if (isDemoMode()) {
+      disableDemoMode()
+    } else {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    }
+    // Full page navigation so server gets the cleared cookie immediately
+    window.location.replace('/login')
   }
 
   const handleNavClick = () => {
