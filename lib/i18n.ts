@@ -186,7 +186,7 @@ export const translations = {
     savings_headline:     'Uštedio si ove godine',
     savings_sub_one:      'otkazivanjem i pauziranjem servisa',
     savings_vs_year:      'vs. puna godina',
-    savings_saving:       'uštedina',
+    savings_saving:       'ušteda',
 
     // ── Search & Filter ───────────────────────────────────────────────────────
     search_placeholder:   'Pretraži po nazivu ili opisu...',
