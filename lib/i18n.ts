@@ -174,6 +174,13 @@ export const translations = {
     demo_create_account:'Kreiraj nalog',
     demo_exit:          'Izlaz',
     demo_saved_locally: 'Demo mod — izmjena je privremena',
+
+    // ── Charts ────────────────────────────────────────────────────────────────
+    chart_by_category:    'Troškovi po kategoriji',
+    chart_monthly_trend:  'Trend troškova (mj)',
+    chart_no_data:        'Nema podataka za prikaz',
+    chart_per_month:      '€/mj',
+    chart_total_tooltip:  'Ukupno',
   },
 
   en: {
@@ -349,6 +356,13 @@ export const translations = {
     demo_create_account:'Create account',
     demo_exit:          'Exit',
     demo_saved_locally: 'Demo mode — change is temporary',
+
+    // ── Charts ────────────────────────────────────────────────────────────────
+    chart_by_category:    'Cost by category',
+    chart_monthly_trend:  'Spending trend (mo)',
+    chart_no_data:        'No data to display',
+    chart_per_month:      '€/mo',
+    chart_total_tooltip:  'Total',
   },
 } satisfies Record<Language, Record<string, string>>
 

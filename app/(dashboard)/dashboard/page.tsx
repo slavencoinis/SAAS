@@ -9,6 +9,8 @@ import { CreditCard, TrendingUp, AlertTriangle, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import AdobeUsageChecker from '@/components/AdobeUsageChecker'
+import CostByCategoryChart from '@/components/charts/CostByCategoryChart'
+import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart'
 
 function getMonthlyEquivalent(price: number, cycle: string): number {
   if (cycle === 'yearly') return price / 12
@@ -133,6 +135,21 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
 
   return (
     <div className="space-y-6">
+
+      {/* ── Charts row ─────────────────────────────────────────────────────── */}
+      {active.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('chart_by_category')}</h2>
+            <CostByCategoryChart subscriptions={subscriptions} />
+          </div>
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('chart_monthly_trend')}</h2>
+            <MonthlyTrendChart subscriptions={subscriptions} />
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Expiring soon */}
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
