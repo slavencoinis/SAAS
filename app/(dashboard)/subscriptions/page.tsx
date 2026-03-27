@@ -144,6 +144,7 @@ function Pagination({ page, totalPages, total, filteredTotal, isFiltered, from, 
   to: number
   onChange: (p: number) => void
 }) {
+  const { t } = useLanguage()
   if (totalPages <= 1 && !isFiltered) return null
 
   // Build page number list with ellipsis
@@ -169,7 +170,7 @@ function Pagination({ page, totalPages, total, filteredTotal, isFiltered, from, 
     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
       {/* Info */}
       <p className="text-xs text-gray-500 dark:text-gray-400">
-        {from}–{to} {isFiltered ? `/ ${filteredTotal}` : ''} · {total} ukupno
+        {from}–{to} {isFiltered ? `/ ${filteredTotal}` : ''} · {total} {t('services_total')}
       </p>
 
       {/* Controls */}

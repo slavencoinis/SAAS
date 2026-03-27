@@ -197,9 +197,6 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
   const active = subscriptions.filter((s) => (BILLING_STATUSES as readonly string[]).includes(s.status))
   const monthlyTotal = active.reduce((sum, s) => sum + getMonthlyEquivalent(s.price, s.billing_cycle), 0)
   const yearlyTotal = monthlyTotal * 12
-  // Services that are stopped (paused/cancelled) — count what was paid this year
-  const stopped = subscriptions.filter((s) => s.status === 'cancelled' || s.status === 'paused' || s.status === 'inactive')
-  const paidThisYearTotal = stopped.reduce((sum, s) => sum + paidThisYear(s.price, s.billing_cycle, s.start_date), 0)
   const unused = subscriptions.filter((s) => s.usage_status === 'unused' && s.status === 'active')
   const today = new Date()
   const expiringSoon = subscriptions.filter((s) => {
@@ -278,7 +275,12 @@ function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) 
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : t('cycle_short_yearly')}
+                      {s.currency} {s.price}/{
+                        s.billing_cycle === 'monthly' ? t('cycle_short_monthly') :
+                        s.billing_cycle === 'yearly'  ? t('cycle_short_yearly') :
+                        s.billing_cycle === 'weekly'  ? t('billing_weekly') :
+                        t('billing_once')
+                      }
                     </p>
                   </div>
                   <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">{t('edit')}</Link>

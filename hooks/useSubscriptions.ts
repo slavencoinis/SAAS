@@ -17,12 +17,13 @@ async function fetchSubscriptions(): Promise<Subscription[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
     .order('renewal_date', { ascending: true })
 
+  if (error) throw new Error(error.message)
   return data ?? []
 }
 
@@ -33,13 +34,14 @@ async function fetchSubscription(id: string): Promise<Subscription | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('id', id)
     .eq('user_id', user.id)
     .single()
 
+  if (error && error.code !== 'PGRST116') throw new Error(error.message)
   return data ?? null
 }
 

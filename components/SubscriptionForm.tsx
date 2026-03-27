@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Subscription, SubscriptionInsert } from '@/types/subscription'
@@ -53,6 +53,27 @@ export default function SubscriptionForm({ subscription }: Props) {
         }
       : defaultValues
   )
+
+  // Reset form if we navigate from one subscription's edit page to another
+  useEffect(() => {
+    if (subscription) {
+      setForm({
+        name:            subscription.name,
+        description:     subscription.description ?? '',
+        url:             subscription.url ?? '',
+        price:           subscription.price,
+        currency:        subscription.currency,
+        billing_cycle:   subscription.billing_cycle,
+        start_date:      subscription.start_date ?? '',
+        renewal_date:    subscription.renewal_date ?? '',
+        status:          subscription.status,
+        usage_status:    subscription.usage_status,
+        category:        subscription.category ?? 'other',
+        notes:           subscription.notes ?? '',
+        api_key_linked:  subscription.api_key_linked ?? false,
+      })
+    }
+  }, [subscription?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (key: keyof SubscriptionInsert, value: string | number | boolean) =>
     setForm((prev) => {
@@ -183,7 +204,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           <input
             className={inputCls}
             value={form.price}
-            onChange={(e) => set('price', e.target.value)}
+            onChange={(e) => set('price', e.target.value === '' ? 0 : parseFloat(e.target.value))}
             type="number"
             min="0"
             step="0.01"
