@@ -13,8 +13,42 @@ import DeleteButton from './DeleteButton'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SortKey = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage'
-type SortDir = 'asc' | 'desc'
+type SortKey    = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage'
+type SortDir    = 'asc' | 'desc'
+type ViewPeriod = 'monthly' | 'yearly'
+
+// ─── Price normalisation ──────────────────────────────────────────────────────
+
+function toMonthly(price: number, cycle: string): number {
+  if (cycle === 'yearly')   return price / 12
+  if (cycle === 'weekly')   return price * 4.333
+  if (cycle === 'one-time') return 0
+  return price
+}
+
+function toYearly(price: number, cycle: string): number {
+  if (cycle === 'yearly')   return price
+  if (cycle === 'weekly')   return price * 52
+  if (cycle === 'one-time') return 0
+  return price * 12
+}
+
+/** Return normalised price + suffix label for the chosen view period */
+function normalisePrice(
+  price: number,
+  cycle: string,
+  currency: string,
+  view: ViewPeriod,
+  cycleShortMo: string,
+  cycleShortYr: string,
+): { amount: string; suffix: string; approx: boolean } {
+  if (cycle === 'one-time') return { amount: `${currency} ${price}`, suffix: '', approx: false }
+  const approx = (view === 'monthly' && cycle !== 'monthly') || (view === 'yearly' && cycle !== 'yearly')
+  if (view === 'monthly') {
+    return { amount: `${currency} ${toMonthly(price, cycle).toFixed(2)}`, suffix: `/${cycleShortMo}`, approx }
+  }
+  return { amount: `${currency} ${toYearly(price, cycle).toFixed(2)}`, suffix: `/${cycleShortYr}`, approx }
+}
 
 // ─── Sort helpers ─────────────────────────────────────────────────────────────
 
@@ -23,13 +57,6 @@ const STATUS_ORDER: Record<string, number> = {
 }
 const USAGE_ORDER: Record<string, number> = {
   high: 0, medium: 1, low: 2, unused: 3, underutilized: 4,
-}
-
-function toMonthly(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.333
-  if (cycle === 'one-time') return 0
-  return price
 }
 
 function sortSubscriptions(list: Subscription[], key: SortKey, dir: SortDir): Subscription[] {
@@ -135,12 +162,14 @@ function TableSkeleton() {
 function SubscriptionsTable({
   subscriptions,
   sortKey, sortDir, onSort,
+  viewPeriod,
   onReset,
 }: {
   subscriptions: Subscription[]
   sortKey: SortKey
   sortDir: SortDir
   onSort: (k: SortKey) => void
+  viewPeriod: ViewPeriod
   onReset: () => void
 }) {
   const { t } = useLanguage()
@@ -204,11 +233,20 @@ function SubscriptionsTable({
                   <td className="py-3 px-4 text-gray-500 dark:text-gray-400">
                     {s.category && categoryKeys[s.category] ? t(categoryKeys[s.category]) : '-'}
                   </td>
-                  <td className="py-3 px-4 text-gray-700 dark:text-gray-200 font-medium">
-                    {s.currency} {s.price}
-                    <span className="text-gray-400 dark:text-gray-500 font-normal text-xs ml-1">
-                      /{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : s.billing_cycle === 'yearly' ? t('cycle_short_yearly') : s.billing_cycle}
-                    </span>
+                  <td className="py-3 px-4">
+                    {(() => {
+                      const { amount, suffix, approx } = normalisePrice(
+                        s.price, s.billing_cycle, s.currency,
+                        viewPeriod, t('cycle_short_monthly'), t('cycle_short_yearly'),
+                      )
+                      return (
+                        <span className="font-medium text-gray-700 dark:text-gray-200">
+                          {approx && <span className="text-gray-400 dark:text-gray-500 font-normal mr-0.5">≈</span>}
+                          {amount}
+                          <span className="text-gray-400 dark:text-gray-500 font-normal text-xs">{suffix}</span>
+                        </span>
+                      )
+                    })()}
                   </td>
                   <td className="py-3 px-4">
                     {renewalDate ? (
@@ -258,6 +296,7 @@ export default function SubscriptionsPage() {
   const [billingFilter,  setBillingFilter]  = useState('all')
   const [sortKey,        setSortKey]        = useState<SortKey>('renewal')
   const [sortDir,        setSortDir]        = useState<SortDir>('asc')
+  const [viewPeriod,     setViewPeriod]     = useState<ViewPeriod>('monthly')
 
   const isFiltered = query !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || billingFilter !== 'all'
 
@@ -349,6 +388,30 @@ export default function SubscriptionsPage() {
           )}
         </div>
 
+        {/* Period toggle */}
+        <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold shrink-0">
+          <button
+            onClick={() => setViewPeriod('monthly')}
+            className={`px-3 h-9 transition-colors ${
+              viewPeriod === 'monthly'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            /{t('cycle_short_monthly')}
+          </button>
+          <button
+            onClick={() => setViewPeriod('yearly')}
+            className={`px-3 h-9 border-l border-gray-200 dark:border-gray-700 transition-colors ${
+              viewPeriod === 'yearly'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            /{t('cycle_short_yearly')}
+          </button>
+        </div>
+
         <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
 
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
@@ -410,6 +473,7 @@ export default function SubscriptionsPage() {
           sortKey={sortKey}
           sortDir={sortDir}
           onSort={handleSort}
+          viewPeriod={viewPeriod}
           onReset={resetFilters}
         />
       )}
