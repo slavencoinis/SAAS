@@ -182,6 +182,12 @@ export const translations = {
     chart_per_month:      '€/mj',
     chart_total_tooltip:  'Ukupno',
 
+    // ── Savings banner ────────────────────────────────────────────────────────
+    savings_headline:     'Uštedio si ove godine',
+    savings_sub_one:      'otkazivanjem i pauziranjem servisa',
+    savings_vs_year:      'vs. puna godina',
+    savings_saving:       'uštedina',
+
     // ── Search & Filter ───────────────────────────────────────────────────────
     search_placeholder:   'Pretraži po nazivu ili opisu...',
     filter_status:        'Status',
@@ -374,6 +380,12 @@ export const translations = {
     chart_no_data:        'No data to display',
     chart_per_month:      '€/mo',
     chart_total_tooltip:  'Total',
+
+    // ── Savings banner ────────────────────────────────────────────────────────
+    savings_headline:     'Saved this year',
+    savings_sub_one:      'by cancelling and pausing services',
+    savings_vs_year:      'vs. full year',
+    savings_saving:       'saved',
 
     // ── Search & Filter ───────────────────────────────────────────────────────
     search_placeholder:   'Search by name or description...',
