@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Layers, FlaskConical } from 'lucide-react'
+import { FlaskConical } from 'lucide-react'
+import { OptiStackMark } from '@/components/OptiStackLogo'
 import { useLanguage } from '@/components/LanguageProvider'
 import { enableDemoMode } from '@/lib/demo'
 
@@ -51,12 +52,12 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-3">
-            <div className="bg-indigo-600 p-3 rounded-xl">
-              <Layers className="w-8 h-8 text-white" />
-            </div>
+          <div className="flex justify-center mb-4">
+            <OptiStackMark size={56} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">SaaS Manager</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <span>Opti</span><span className="text-indigo-600 dark:text-indigo-400">Stack</span>
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t('login_subtitle')}</p>
         </div>
 

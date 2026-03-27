@@ -5,7 +5,8 @@ import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { differenceInDays } from 'date-fns'
 import { getDisplayRenewal, formatRenewal, BILLING_STATUSES, paidThisYear } from '@/lib/renewalUtils'
-import { CreditCard, TrendingUp, AlertTriangle, XCircle, PiggyBank } from 'lucide-react'
+import { CreditCard, AlertTriangle, XCircle, PiggyBank } from 'lucide-react'
+import { SpendIcon } from '@/components/OptiStackLogo'
 import Link from 'next/link'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import AdobeUsageChecker from '@/components/AdobeUsageChecker'
@@ -168,7 +169,7 @@ function DashboardStats({ subscriptions }: { subscriptions: Subscription[] }) {
 
   const stats = [
     { label: t('stat_active_services'),  value: active.length,                icon: CreditCard,    color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-950' },
-    { label: t('stat_monthly_cost'),     value: `€${monthlyTotal.toFixed(2)}`, icon: TrendingUp,    color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
+    { label: t('stat_monthly_cost'),     value: `€${monthlyTotal.toFixed(2)}`, icon: SpendIcon,     color: 'text-green-600',  bg: 'bg-green-50 dark:bg-green-950'   },
     { label: t('stat_expiring_soon'),    value: expiringSoon.length,           icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-950' },
     { label: t('stat_unused'),           value: unused.length,                 icon: XCircle,       color: 'text-red-600',    bg: 'bg-red-50 dark:bg-red-950'       },
   ]

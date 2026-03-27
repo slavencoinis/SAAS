@@ -7,7 +7,7 @@ import { LanguageProvider } from '@/components/LanguageProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'SaaS Manager',
+  title: 'OptiStack',
   description: 'Upravljaj svim SaaS servisima na jednom mjestu',
 }
 

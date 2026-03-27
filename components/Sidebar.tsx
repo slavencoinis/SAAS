@@ -11,12 +11,12 @@ import {
   CreditCard,
   PlusCircle,
   LogOut,
-  Layers,
   Plug,
   Sun,
   Moon,
   Monitor,
 } from 'lucide-react'
+import { OptiStackMark } from '@/components/OptiStackLogo'
 
 const themeOptions: { value: ThemePreference; icon: typeof Sun; labelKey: 'theme_system' | 'theme_light' | 'theme_dark' }[] = [
   { value: 'system', icon: Monitor, labelKey: 'theme_system' },
@@ -52,10 +52,13 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-gray-900 text-white flex flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          <Layers className="w-7 h-7 text-indigo-400" />
-          <span className="text-xl font-bold">SaaS Manager</span>
+      <div className="px-5 py-5 border-b border-gray-700/60">
+        <div className="flex items-center gap-3">
+          <OptiStackMark size={34} />
+          <div className="leading-none">
+            <span className="text-[17px] font-bold tracking-tight text-white">Opti</span>
+            <span className="text-[17px] font-bold tracking-tight text-indigo-400">Stack</span>
+          </div>
         </div>
       </div>
 
