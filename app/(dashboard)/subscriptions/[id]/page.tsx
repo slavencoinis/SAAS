@@ -56,7 +56,7 @@ function Field({ icon: Icon, label, value }: { icon: React.ElementType; label: s
 export default function ViewSubscriptionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { data: subscription, isLoading } = useSubscription(id)
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const router = useRouter()
 
   const categoryLabels: Record<string, string> = {
@@ -162,7 +162,7 @@ export default function ViewSubscriptionPage({ params }: { params: Promise<{ id:
                 icon={Calendar}
                 label={t('form_start_date')}
                 value={subscription.start_date
-                  ? new Date(subscription.start_date).toLocaleDateString('hr-HR')
+                  ? new Date(subscription.start_date).toLocaleDateString(lang === 'en' ? 'en-GB' : 'hr-HR')
                   : <span className="text-gray-400">—</span>}
               />
               <Field

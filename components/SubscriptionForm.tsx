@@ -271,6 +271,7 @@ export default function SubscriptionForm({ subscription }: Props) {
             <option value="medium">{t('usage_medium')}</option>
             <option value="low">{t('usage_low')}</option>
             <option value="unused">{t('usage_unused')}</option>
+            <option value="underutilized">{t('usage_underutilized')}</option>
           </select>
         </div>
         <div>

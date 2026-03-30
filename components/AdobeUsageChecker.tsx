@@ -44,7 +44,7 @@ function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
           ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300'
           : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
       }`}>
-        {over ? 'Underutilized' : t('adobe_in_use')}
+        {over ? t('usage_underutilized') : t('adobe_in_use')}
       </span>
     </div>
   )

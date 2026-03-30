@@ -156,7 +156,7 @@ function EmailSection() {
 
       <p className="text-sm text-gray-500 dark:text-gray-400">
         {/* Short info about what the reminders do */}
-        Automatski email 7 dana prije isteka servisa (active, trial). Pokreće se jednom dnevno u 08:00 UTC.
+        {t('settings_email_reminder_desc')}
       </p>
 
       <button
