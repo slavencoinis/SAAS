@@ -8,15 +8,7 @@ import {
 import { format, subMonths, endOfMonth, parseISO, startOfMonth, isSameMonth } from 'date-fns'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
-function toMonthly(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.333
-  if (cycle === 'one-time') return 0
-  return price
-}
+import { getMonthlyEquivalent } from '@/lib/renewalUtils'
 
 function buildTrendData(subscriptions: Subscription[], numMonths = 7) {
   const today = new Date()
@@ -41,7 +33,7 @@ function buildTrendData(subscriptions: Subscription[], numMonths = 7) {
         if (!['active', 'trial'].includes(sub.status)) continue
       }
       // Past months: include everything that was started
-      total += toMonthly(sub.price, sub.billing_cycle)
+      total += getMonthlyEquivalent(sub.price, sub.billing_cycle)
     }
 
     return {

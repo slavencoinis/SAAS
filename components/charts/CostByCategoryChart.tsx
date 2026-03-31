@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
+import { getMonthlyEquivalent } from '@/lib/renewalUtils'
 
 // ─── Category config ──────────────────────────────────────────────────────────
 
@@ -15,13 +16,6 @@ const CATEGORY_CONFIG: Record<string, { color: string; label: Record<string, str
   marketing:     { color: '#f43f5e', label: { sr: 'Marketing',     en: 'Marketing'     } },
   storage:       { color: '#f59e0b', label: { sr: 'Storage',       en: 'Storage'       } },
   other:         { color: '#94a3b8', label: { sr: 'Ostalo',        en: 'Other'         } },
-}
-
-function toMonthly(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.333
-  if (cycle === 'one-time') return 0
-  return price
 }
 
 // ─── Custom tooltip ───────────────────────────────────────────────────────────
@@ -63,7 +57,7 @@ export default function CostByCategoryChart({ subscriptions }: Props) {
   const byCategory: Record<string, number> = {}
   for (const s of billing) {
     const cat = s.category ?? 'other'
-    byCategory[cat] = (byCategory[cat] ?? 0) + toMonthly(s.price, s.billing_cycle)
+    byCategory[cat] = (byCategory[cat] ?? 0) + getMonthlyEquivalent(s.price, s.billing_cycle)
   }
 
   const total = Object.values(byCategory).reduce((a, b) => a + b, 0)
