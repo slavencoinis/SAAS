@@ -32,58 +32,67 @@ export default function SignupPage() {
     setLoading(false)
   }
 
-  const inputCls = [
-    'w-full px-3 py-2 rounded-lg text-sm',
-    'border border-gray-300 dark:border-gray-600',
-    'bg-white dark:bg-gray-800',
-    'text-gray-900 dark:text-gray-100',
-    'placeholder:text-gray-400 dark:placeholder:text-gray-500',
-    'focus:outline-none focus:ring-2 focus:ring-indigo-500',
-  ].join(' ')
+  const inputStyle = {
+    background: 'var(--input-bg)',
+    border: '1px solid var(--input-border)',
+    color: 'var(--input-text)',
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4 py-8">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'var(--background)' }}>
+      <div className="w-full max-w-[400px]">
 
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <OptiStackMark size={56} />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-500/10 mb-4">
+            <OptiStackMark size={36} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            <span>Opti</span><span className="text-indigo-600 dark:text-indigo-400">Stack</span>
+          <h1 className="text-[22px] font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>
+            Opti<span className="text-indigo-500">Stack</span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t('signup_subtitle')}</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--muted)' }}>{t('signup_subtitle')}</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+        {/* Card */}
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: 'var(--card)',
+            border: '1px solid var(--card-border)',
+            boxShadow: 'var(--shadow-lg)',
+          }}
+        >
           <form onSubmit={handleSignup} className="space-y-4">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-xl text-sm">
                 {error}
               </div>
             )}
             {message && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl text-sm">
                 {message}
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--muted)' }}>Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={inputCls}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                style={inputStyle}
+                placeholder="you@company.com"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('login_password')}</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--muted)' }}>{t('login_password')}</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={inputCls}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+                style={inputStyle}
                 required
                 minLength={6}
               />
@@ -91,32 +100,33 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors mt-2"
+              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors mt-1"
             >
               {loading ? t('signup_loading') : t('signup_btn')}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--muted)' }}>
             {t('signup_has_account')}{' '}
-            <Link href="/login" className="text-indigo-500 font-medium hover:underline">
+            <Link href="/login" className="text-indigo-500 font-semibold hover:underline">
               {t('signup_login')}
             </Link>
           </p>
         </div>
 
-        {/* Language toggle — bottom */}
+        {/* Language toggle */}
         <div className="flex justify-center mt-6">
-          <div className="flex gap-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm">
+          <div className="flex gap-0.5 rounded-xl p-0.5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)' }}>
             {(['sr', 'en'] as Language[]).map((l) => (
               <button
                 key={l}
                 onClick={() => setLang(l)}
-                className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                   lang === l
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white'
+                    ? 'bg-indigo-500 text-white shadow-sm'
+                    : 'hover:text-gray-800 dark:hover:text-white'
                 }`}
+                style={lang !== l ? { color: 'var(--muted)' } : {}}
               >
                 {l.toUpperCase()}
               </button>

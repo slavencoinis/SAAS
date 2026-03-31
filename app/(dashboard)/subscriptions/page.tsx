@@ -103,7 +103,8 @@ function SortTh({
 }) {
   return (
     <th
-      className={`text-left py-3 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 select-none ${className}`}
+      className={`text-left py-3 px-4 text-[11px] font-semibold uppercase tracking-wide select-none ${className}`}
+      style={{ color: 'var(--muted)' }}
     >
       <button
         onClick={() => onClick(sortKey)}
@@ -149,42 +150,42 @@ function Pagination({ page, totalPages, total, filteredTotal, isFiltered, from, 
   }
 
   const btnCls = (active: boolean) =>
-    `min-w-[32px] h-8 px-2 rounded-md text-xs font-medium transition-colors ${
+    `min-w-[32px] h-8 px-2 rounded-lg text-xs font-semibold transition-colors ${
       active
         ? 'bg-indigo-600 text-white'
-        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+        : 'hover:bg-black/5 dark:hover:bg-white/5'
     }`
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-      {/* Info */}
-      <p className="text-xs text-gray-500 dark:text-gray-400">
+    <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: '1px solid var(--card-border)' }}>
+      <p className="text-xs" style={{ color: 'var(--muted)' }}>
         {from}–{to} {isFiltered ? `/ ${filteredTotal}` : ''} · {total} {t('services_total')}
       </p>
 
-      {/* Controls */}
       {totalPages > 1 && (
         <div className="flex items-center gap-1">
           <button
             onClick={() => onChange(page - 1)}
             disabled={page === 1}
-            className="h-8 w-8 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            style={{ color: 'var(--muted)' }}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
           {pages.map((p, i) =>
             p === '…' ? (
-              <span key={`ellipsis-${i}`} className="min-w-[32px] h-8 flex items-center justify-center text-xs text-gray-400">…</span>
+              <span key={`ellipsis-${i}`} className="min-w-[32px] h-8 flex items-center justify-center text-xs" style={{ color: 'var(--muted)' }}>…</span>
             ) : (
-              <button key={p} onClick={() => onChange(p)} className={btnCls(p === page)}>{p}</button>
+              <button key={p} onClick={() => onChange(p)} className={btnCls(p === page)} style={p !== page ? { color: 'var(--foreground)' } : {}}>{p}</button>
             )
           )}
 
           <button
             onClick={() => onChange(page + 1)}
             disabled={page === totalPages}
-            className="h-8 w-8 flex items-center justify-center rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            style={{ color: 'var(--muted)' }}
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -197,24 +198,26 @@ function Pagination({ page, totalPages, total, filteredTotal, isFiltered, from, 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function TableSkeleton() {
+  const bone = { background: 'var(--card-border)' }
+  const cardStyle = { background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
-      <div className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex gap-8">
+    <div className="rounded-2xl overflow-hidden animate-pulse" style={cardStyle}>
+      <div className="px-4 py-3 flex gap-8" style={{ borderBottom: '1px solid var(--card-border)', background: 'var(--background)' }}>
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="h-3 w-16 rounded bg-gray-200 dark:bg-gray-700" />
+          <div key={i} className="h-2.5 w-16 rounded" style={bone} />
         ))}
       </div>
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex gap-8 px-4 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div key={i} className="flex gap-8 px-4 py-4" style={{ borderBottom: '1px solid var(--card-border)' }}>
           <div className="space-y-1.5">
-            <div className="h-3.5 w-28 rounded bg-gray-100 dark:bg-gray-800" />
-            <div className="h-2.5 w-20 rounded bg-gray-100 dark:bg-gray-800" />
+            <div className="h-3.5 w-28 rounded" style={bone} />
+            <div className="h-2.5 w-20 rounded" style={bone} />
           </div>
-          <div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-3.5 w-16 rounded bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-3.5 w-24 rounded bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
-          <div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-gray-800 self-center" />
+          <div className="h-3.5 w-20 rounded self-center" style={bone} />
+          <div className="h-3.5 w-16 rounded self-center" style={bone} />
+          <div className="h-3.5 w-24 rounded self-center" style={bone} />
+          <div className="h-5 w-14 rounded-full self-center" style={bone} />
+          <div className="h-5 w-14 rounded-full self-center" style={bone} />
         </div>
       ))}
     </div>
@@ -241,11 +244,13 @@ function SubscriptionsTable({
   const { t } = useLanguage()
   const today = new Date()
 
+  const tableCard = { background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }
+
   if (subscriptions.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-        <Search className="w-8 h-8 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
-        <p className="text-gray-400 dark:text-gray-500 mb-3 text-sm">{t('filter_no_results')}</p>
+      <div className="rounded-2xl p-12 text-center" style={tableCard}>
+        <Search className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--card-border)' }} />
+        <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>{t('filter_no_results')}</p>
         <button onClick={onReset} className="text-sm text-indigo-500 hover:underline">
           {t('filter_reset')}
         </button>
@@ -254,10 +259,10 @@ function SubscriptionsTable({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={tableCard}>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-700">
+          <thead style={{ borderBottom: '1px solid var(--card-border)', background: 'var(--background)' }}>
             <tr>
               <SortTh label={t('col_name')}     sortKey="name"     active={sortKey === 'name'}     dir={sortDir} onClick={onSort} />
               <SortTh label={t('col_category')} sortKey="category" active={sortKey === 'category'} dir={sortDir} onClick={onSort} className="hidden md:table-cell" />
@@ -268,35 +273,36 @@ function SubscriptionsTable({
               <th className="py-3 px-4" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody>
             {subscriptions.map((s) => {
               const renewalDate      = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
               const daysUntilRenewal = renewalDate ? differenceInDays(renewalDate, today) : null
               const isExpiringSoon   = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
 
               return (
-                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+                <tr key={s.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors" style={{ borderBottom: '1px solid var(--card-border)' }}>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <div>
                         <Link
                           href={`/subscriptions/${s.id}`}
-                          className="font-medium text-gray-900 dark:text-white hover:text-indigo-500 dark:hover:text-indigo-400"
+                          className="font-medium hover:text-indigo-500 transition-colors"
+                          style={{ color: 'var(--foreground)' }}
                         >
                           {s.name}
                         </Link>
                         {s.description && (
-                          <p className="text-xs text-gray-400 dark:text-gray-500 truncate max-w-[180px]">{s.description}</p>
+                          <p className="text-xs truncate max-w-[180px] mt-0.5" style={{ color: 'var(--muted)' }}>{s.description}</p>
                         )}
                       </div>
                       {s.url && (
-                        <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-gray-300 dark:text-gray-600 hover:text-indigo-500">
+                        <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors" style={{ color: 'var(--card-border)' }}>
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                     </div>
                   </td>
-                  <td className="hidden md:table-cell py-3 px-4 text-gray-500 dark:text-gray-400">
+                  <td className="hidden md:table-cell py-3 px-4 text-sm" style={{ color: 'var(--muted)' }}>
                     {s.category && categoryKeys[s.category] ? t(categoryKeys[s.category]) : '-'}
                   </td>
                   <td className="py-3 px-4">
@@ -306,10 +312,10 @@ function SubscriptionsTable({
                         viewPeriod, t('cycle_short_monthly'), t('cycle_short_yearly'),
                       )
                       return (
-                        <span className="font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">
-                          {approx && <span className="text-gray-400 dark:text-gray-500 font-normal mr-0.5">≈</span>}
+                        <span className="font-medium whitespace-nowrap" style={{ color: 'var(--foreground)' }}>
+                          {approx && <span className="font-normal mr-0.5" style={{ color: 'var(--muted)' }}>≈</span>}
                           {amount}
-                          <span className="text-gray-400 dark:text-gray-500 font-normal text-xs">{suffix}</span>
+                          <span className="font-normal text-xs" style={{ color: 'var(--muted)' }}>{suffix}</span>
                         </span>
                       )
                     })()}
@@ -317,24 +323,24 @@ function SubscriptionsTable({
                   <td className="hidden sm:table-cell py-3 px-4">
                     {renewalDate ? (
                       <div className="whitespace-nowrap">
-                        <span className={isExpiringSoon ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-700 dark:text-gray-200'}>
+                        <span className={isExpiringSoon ? 'text-rose-600 dark:text-rose-400 font-medium' : ''} style={!isExpiringSoon ? { color: 'var(--foreground)' } : {}}>
                           {formatRenewal(renewalDate)}
                         </span>
                         {daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 30 && (
-                          <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-red-500' : 'text-yellow-500'}`}>
+                          <span className={`ml-2 text-xs ${daysUntilRenewal <= 7 ? 'text-rose-500' : 'text-amber-500'}`}>
                             ({daysUntilRenewal === 0 ? t('today') : `${daysUntilRenewal}d`})
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-400 dark:text-gray-600">-</span>
+                      <span style={{ color: 'var(--muted)' }}>-</span>
                     )}
                   </td>
                   <td className="py-3 px-4"><StatusBadge status={s.status} /></td>
                   <td className="hidden lg:table-cell py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">
+                      <Link href={`/subscriptions/${s.id}/edit`} className="text-xs font-medium text-indigo-500 hover:underline">
                         {t('edit')}
                       </Link>
                       <DeleteButton id={s.id} name={s.name} />
@@ -419,13 +425,12 @@ export default function SubscriptionsPage() {
     />
   )
 
-  const selectCls = [
-    'h-9 pl-3 pr-8 rounded-lg text-sm appearance-none cursor-pointer',
-    'border border-gray-200 dark:border-gray-700',
-    'bg-white dark:bg-gray-800',
-    'text-gray-700 dark:text-gray-200',
-    'focus:outline-none focus:ring-2 focus:ring-indigo-500',
-  ].join(' ')
+  const selectCls = 'h-9 pl-3 pr-8 rounded-xl text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all'
+  const selectStyle = {
+    border: '1px solid var(--input-border)',
+    background: 'var(--input-bg)',
+    color: 'var(--input-text)',
+  }
 
   const total = subscriptions?.length ?? 0
 
@@ -435,8 +440,8 @@ export default function SubscriptionsPage() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('services_title')}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{t('services_title')}</h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--muted)' }}>
             {isLoading || !subscriptions
               ? t('services_loading')
               : isFiltered
@@ -451,7 +456,7 @@ export default function SubscriptionsPage() {
           <CsvExportButton subscriptions={subscriptions ?? []} />
           <Link
             href="/subscriptions/new"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors"
           >
             <PlusCircle className="w-4 h-4" />
             <span className="hidden sm:inline">{t('add_service_btn')}</span>
@@ -464,47 +469,35 @@ export default function SubscriptionsPage() {
         {/* Row 1: search + period toggle */}
         <div className="flex gap-2 items-center">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--muted)' }} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('search_placeholder')}
-              className={[
-                'w-full h-9 pl-9 pr-8 rounded-lg text-sm',
-                'border border-gray-200 dark:border-gray-700',
-                'bg-white dark:bg-gray-800',
-                'text-gray-900 dark:text-gray-100',
-                'placeholder:text-gray-400 dark:placeholder:text-gray-500',
-                'focus:outline-none focus:ring-2 focus:ring-indigo-500',
-              ].join(' ')}
+              className="w-full h-9 pl-9 pr-8 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              style={{ border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button onClick={() => setQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 hover:text-gray-600 dark:hover:text-gray-200" style={{ color: 'var(--muted)' }}>
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
           {/* Period toggle */}
-          <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden text-xs font-semibold shrink-0">
+          <div className="flex rounded-xl overflow-hidden text-xs font-semibold shrink-0" style={{ border: '1px solid var(--input-border)' }}>
             <button
               onClick={() => setViewPeriod('monthly')}
-              className={`px-3 h-9 transition-colors ${
-                viewPeriod === 'monthly'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className={`px-3 h-9 transition-colors ${viewPeriod === 'monthly' ? 'bg-indigo-600 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+              style={viewPeriod !== 'monthly' ? { background: 'var(--input-bg)', color: 'var(--muted)' } : {}}
             >
               /{t('cycle_short_monthly')}
             </button>
             <button
               onClick={() => setViewPeriod('yearly')}
-              className={`px-3 h-9 border-l border-gray-200 dark:border-gray-700 transition-colors ${
-                viewPeriod === 'yearly'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
+              className={`px-3 h-9 transition-colors ${viewPeriod === 'yearly' ? 'bg-indigo-600 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+              style={viewPeriod !== 'yearly' ? { background: 'var(--input-bg)', color: 'var(--muted)', borderLeft: '1px solid var(--input-border)' } : { borderLeft: '1px solid var(--input-border)' }}
             >
               /{t('cycle_short_yearly')}
             </button>
@@ -515,7 +508,7 @@ export default function SubscriptionsPage() {
         <div className="flex flex-wrap gap-2 items-center">
           <SlidersHorizontal className="w-4 h-4 text-gray-400 shrink-0 hidden sm:block" />
 
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls}>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={selectCls} style={selectStyle}>
             <option value="all">{t('filter_status')}: {t('filter_all')}</option>
             <option value="active">{t('status_active')}</option>
             <option value="trial">{t('status_trial')}</option>
@@ -524,7 +517,7 @@ export default function SubscriptionsPage() {
             <option value="overlimit">{t('status_overlimit')}</option>
           </select>
 
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls}>
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className={selectCls} style={selectStyle}>
             <option value="all">{t('filter_category')}: {t('filter_all')}</option>
             <option value="productivity">{t('cat_productivity')}</option>
             <option value="development">{t('cat_development')}</option>
@@ -535,7 +528,7 @@ export default function SubscriptionsPage() {
             <option value="other">{t('cat_other')}</option>
           </select>
 
-          <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls}>
+          <select value={billingFilter} onChange={(e) => setBillingFilter(e.target.value)} className={selectCls} style={selectStyle}>
             <option value="all">{t('filter_billing')}: {t('filter_all')}</option>
             <option value="monthly">{t('billing_monthly')}</option>
             <option value="yearly">{t('billing_yearly')}</option>
@@ -546,7 +539,8 @@ export default function SubscriptionsPage() {
           {isFiltered && (
             <button
               onClick={resetFilters}
-              className="flex items-center gap-1.5 h-9 px-3 rounded-lg text-sm text-red-500 dark:text-red-400 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+              className="flex items-center gap-1.5 h-9 px-3 rounded-xl text-sm text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+              style={{ border: '1px solid', borderColor: 'rgb(254 202 202 / 1)' }}
             >
               <X className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t('filter_reset')}</span>
@@ -559,11 +553,11 @@ export default function SubscriptionsPage() {
       {isLoading || !subscriptions ? (
         <TableSkeleton />
       ) : subscriptions.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center">
-          <p className="text-gray-400 dark:text-gray-500 mb-4">{t('no_services_empty')}</p>
+        <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="text-sm mb-4" style={{ color: 'var(--muted)' }}>{t('no_services_empty')}</p>
           <Link
             href="/subscriptions/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700"
           >
             <PlusCircle className="w-4 h-4" />
             {t('add_first_btn')}

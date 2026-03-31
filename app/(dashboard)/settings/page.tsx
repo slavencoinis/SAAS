@@ -7,12 +7,18 @@ import { isDemoMode } from '@/lib/demo'
 import { createClient } from '@/lib/supabase/client'
 import { Settings, DollarSign, Mail, FlaskConical } from 'lucide-react'
 
+const card = {
+  background: 'var(--card)',
+  border: '1px solid var(--card-border)',
+  boxShadow: 'var(--shadow-sm)',
+}
+
 // ─── Budget section ───────────────────────────────────────────────────────────
 
 function BudgetSection() {
-  const { t }                   = useLanguage()
-  const { data: settings }      = useBudget()
-  const [value, setValue]       = useState('')
+  const { t }                       = useLanguage()
+  const { data: settings }          = useBudget()
+  const [value, setValue]           = useState('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'ok' | 'error'>('idle')
   const demo = isDemoMode()
 
@@ -42,21 +48,21 @@ function BudgetSection() {
     t('budget_save')
 
   const btnCls =
-    saveStatus === 'ok'    ? 'bg-green-600 hover:bg-green-700' :
-    saveStatus === 'error' ? 'bg-red-600 hover:bg-red-700' :
+    saveStatus === 'ok'    ? 'bg-emerald-600 hover:bg-emerald-700' :
+    saveStatus === 'error' ? 'bg-rose-600 hover:bg-rose-700' :
     'bg-indigo-600 hover:bg-indigo-700'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+    <div className="rounded-2xl p-6 space-y-4" style={card}>
       <div className="flex items-center gap-3">
-        <div className="bg-green-50 dark:bg-green-950 p-2 rounded-lg">
-          <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
+        <div className="bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-xl">
+          <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
         </div>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('settings_budget_section')}</h2>
+        <h2 className="text-[13px] font-semibold" style={{ color: 'var(--foreground)' }}>{t('settings_budget_section')}</h2>
       </div>
 
       {demo && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 flex items-center gap-2">
+        <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl px-3 py-2.5 flex items-center gap-2">
           <FlaskConical className="w-3.5 h-3.5 shrink-0" />
           {t('settings_demo_note')}
         </p>
@@ -64,11 +70,11 @@ function BudgetSection() {
 
       <div className="flex gap-3 items-end">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+          <label className="block text-[11px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--muted)' }}>
             {t('budget_label')}
           </label>
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">€</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm" style={{ color: 'var(--muted)' }}>€</span>
             <input
               type="number"
               min="1"
@@ -76,17 +82,18 @@ function BudgetSection() {
               value={value}
               onChange={(e) => setValue(e.target.value)}
               placeholder={t('budget_placeholder')}
-              className="w-full pl-7 pr-4 py-2.5 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-8 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--input-text)' }}
             />
           </div>
           {value === '' && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t('budget_no_limit')}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{t('budget_no_limit')}</p>
           )}
         </div>
         <button
           onClick={handleSave}
           disabled={saveStatus === 'saving'}
-          className={`px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 ${btnCls}`}
+          className={`px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors disabled:opacity-50 ${btnCls}`}
         >
           {btnLabel}
         </button>
@@ -141,28 +148,28 @@ function EmailSection() {
     t('settings_test_email')
 
   const btnCls =
-    status === 'ok'    ? 'bg-green-600 hover:bg-green-700 text-white' :
-    status === 'error' ? 'bg-red-600 hover:bg-red-700 text-white' :
-    'border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800'
+    status === 'ok'    ? 'bg-emerald-600 hover:bg-emerald-700 text-white' :
+    status === 'error' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
+    'hover:bg-black/5 dark:hover:bg-white/5 text-sm font-medium'
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+    <div className="rounded-2xl p-6 space-y-4" style={card}>
       <div className="flex items-center gap-3">
-        <div className="bg-indigo-50 dark:bg-indigo-950 p-2 rounded-lg">
+        <div className="bg-indigo-50 dark:bg-indigo-500/10 p-2.5 rounded-xl">
           <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         </div>
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('settings_email_section')}</h2>
+        <h2 className="text-[13px] font-semibold" style={{ color: 'var(--foreground)' }}>{t('settings_email_section')}</h2>
       </div>
 
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        {/* Short info about what the reminders do */}
+      <p className="text-sm" style={{ color: 'var(--muted)' }}>
         {t('settings_email_reminder_desc')}
       </p>
 
       <button
         onClick={handleTestEmail}
         disabled={status === 'sending'}
-        className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 ${btnCls}`}
+        className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 ${btnCls}`}
+        style={!['ok', 'error'].includes(status) ? { border: '1px solid var(--card-border)', color: 'var(--foreground)' } : {}}
       >
         <Mail className="w-4 h-4" />
         {btnLabel}
@@ -178,12 +185,10 @@ export default function SettingsPage() {
   const { t } = useLanguage()
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      <div>
-        <div className="flex items-center gap-3">
-          <Settings className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('settings_title')}</h1>
-        </div>
+    <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center gap-3">
+        <Settings className="w-5 h-5" style={{ color: 'var(--muted)' }} />
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground)' }}>{t('settings_title')}</h1>
       </div>
 
       <BudgetSection />
