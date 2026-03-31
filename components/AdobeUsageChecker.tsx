@@ -13,36 +13,36 @@ function UsageResultRow({ usage }: { usage: AdobeAppUsage }) {
   const over = usage.isUnderutilized
 
   return (
-    <div className={`flex items-start justify-between gap-4 rounded-lg border p-4 ${
+    <div className={`flex items-start justify-between gap-4 rounded-xl border p-4 ${
       over
         ? 'border-orange-200 dark:border-orange-900/50 bg-orange-50 dark:bg-orange-950/30'
-        : 'border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-950/30'
+        : 'border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30'
     }`}>
       <div className="flex items-start gap-3">
         {over
           ? <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-500" />
-          : <CheckCircle   className="mt-0.5 h-5 w-5 shrink-0 text-green-500" />
+          : <CheckCircle   className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
         }
         <div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">{usage.subscriptionName}</p>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{usage.subscriptionName}</p>
+          <p className="mt-0.5 text-xs" style={{ color: 'var(--muted)' }}>
             {t('adobe_last_opened')}{' '}
-            <span className="font-medium text-gray-700 dark:text-gray-200">{formattedDate}</span>
+            <span className="font-medium" style={{ color: 'var(--foreground)' }}>{formattedDate}</span>
           </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>
             {t('adobe_inactive')}{' '}
-            <span className={`font-medium ${over ? 'text-orange-700 dark:text-orange-400' : 'text-green-700 dark:text-green-400'}`}>
+            <span className={`font-medium ${over ? 'text-orange-700 dark:text-orange-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
               {usage.daysSinceLastUse} {usage.daysSinceLastUse === 1 ? t('adobe_days_singular') : t('adobe_days_plural')}
             </span>{' '}
-            <span className="text-gray-400 dark:text-gray-500">({t('adobe_threshold')} {UNDERUTILIZED_THRESHOLD_DAYS} {t('adobe_days_unit')})</span>
+            <span style={{ color: 'var(--muted)' }}>({t('adobe_threshold')} {UNDERUTILIZED_THRESHOLD_DAYS} {t('adobe_days_unit')})</span>
           </p>
         </div>
       </div>
 
-      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+      <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
         over
           ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300'
-          : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+          : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
       }`}>
         {over ? t('usage_underutilized') : t('adobe_in_use')}
       </span>
@@ -67,23 +67,26 @@ export default function AdobeUsageChecker() {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+    <div
+      className="rounded-2xl p-6"
+      style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
+    >
       {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600">
             <Layers className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Adobe Creative Cloud</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Provjera stvarnog korištenja licenci</p>
+            <h2 className="text-[13px] font-semibold" style={{ color: 'var(--foreground)' }}>Adobe Creative Cloud</h2>
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>{t('adobe_subtitle')}</p>
           </div>
         </div>
 
         <button
           onClick={handleCheck}
           disabled={loading}
-          className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           {loading ? t('adobe_checking') : t('adobe_check_btn')}
@@ -92,12 +95,12 @@ export default function AdobeUsageChecker() {
 
       {/* Description */}
       {!result && !loading && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Simulira Adobe CC API poziv koji provjerava kada je Photoshop posljednji put otvoren.
-          Ako nije korišten{' '}
-          <span className="font-medium text-gray-700 dark:text-gray-200">{UNDERUTILIZED_THRESHOLD_DAYS}+ {t('adobe_days_unit')}</span>,
-          licenca se automatski označava kao{' '}
-          <span className="rounded bg-orange-100 dark:bg-orange-900/40 px-1.5 py-0.5 text-xs font-medium text-orange-800 dark:text-orange-300">
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>
+          {t('adobe_desc_part1')}{' '}
+          {t('adobe_desc_not_used')}{' '}
+          <span className="font-medium" style={{ color: 'var(--foreground)' }}>{UNDERUTILIZED_THRESHOLD_DAYS}+ {t('adobe_days_unit')}</span>
+          {t('adobe_desc_mark_as')}{' '}
+          <span className="rounded bg-orange-100 dark:bg-orange-900/40 px-1.5 py-0.5 text-xs font-semibold text-orange-800 dark:text-orange-300">
             Underutilized
           </span>.
         </p>
@@ -107,7 +110,7 @@ export default function AdobeUsageChecker() {
       {loading && (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-lg bg-gray-100 dark:bg-gray-800" />
+            <div key={i} className="h-20 animate-pulse rounded-xl" style={{ background: 'var(--card-border)' }} />
           ))}
         </div>
       )}
@@ -116,15 +119,15 @@ export default function AdobeUsageChecker() {
       {result && !loading && (
         <div className="space-y-3">
           {result.error && (
-            <p className="rounded-lg bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+            <p className="rounded-xl bg-rose-50 dark:bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400">
               {result.error}
             </p>
           )}
 
           {result.noSubscriptionsFound && (
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-6 text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('adobe_no_services')}</p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <div className="rounded-xl px-4 py-6 text-center" style={{ border: '1px solid var(--card-border)', background: 'var(--input-bg)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{t('adobe_no_services')}</p>
+              <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
                 {t('adobe_no_hint')}
               </p>
             </div>
@@ -135,24 +138,24 @@ export default function AdobeUsageChecker() {
           ))}
 
           {result.checked.length > 0 && (
-            <div className={`flex items-center gap-2 rounded-lg px-4 py-3 text-sm ${
+            <div className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm ${
               result.markedUnderutilized > 0
                 ? 'bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300'
-                : 'bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-300'
+                : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300'
             }`}>
               {result.markedUnderutilized > 0 ? (
                 <>
                   <AlertTriangle className="h-4 w-4 shrink-0" />
                   <span>
                     <span className="font-semibold">{result.markedUnderutilized}</span>{' '}
-                    {result.markedUnderutilized === 1 ? 'licenca označena' : 'licence označene'} kao{' '}
-                    <span className="font-semibold">Underutilized</span> i ažurirane u bazi.
+                    {result.markedUnderutilized === 1 ? t('adobe_marked_one') : t('adobe_marked_many')}{' '}
+                    {t('adobe_updated_db')}
                   </span>
                 </>
               ) : (
                 <>
                   <CheckCircle className="h-4 w-4 shrink-0" />
-                  <span>Sve Adobe licence se aktivno koriste.</span>
+                  <span>{t('adobe_all_ok')}</span>
                 </>
               )}
             </div>
