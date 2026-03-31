@@ -6,14 +6,7 @@ import { useLanguage } from '@/components/LanguageProvider'
 import { SpendIcon } from '@/components/OptiStackLogo'
 import BudgetIndicator from '@/components/BudgetIndicator'
 import { differenceInDays } from 'date-fns'
-import { getDisplayRenewal, BILLING_STATUSES } from '@/lib/renewalUtils'
-
-function getMonthlyEquivalent(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.33
-  if (cycle === 'one-time') return 0
-  return price
-}
+import { getDisplayRenewal, BILLING_STATUSES, getMonthlyEquivalent } from '@/lib/renewalUtils'
 
 export default function DashboardStats({
   subscriptions,

@@ -5,17 +5,10 @@ import { AlertTriangle, XCircle } from 'lucide-react'
 import { differenceInDays } from 'date-fns'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
-import { getDisplayRenewal, formatRenewal, BILLING_STATUSES } from '@/lib/renewalUtils'
+import { getDisplayRenewal, formatRenewal, BILLING_STATUSES, getMonthlyEquivalent } from '@/lib/renewalUtils'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import CostByCategoryChart from '@/components/charts/CostByCategoryChart'
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart'
-
-function getMonthlyEquivalent(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.33
-  if (cycle === 'one-time') return 0
-  return price
-}
 
 export default function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) {
   const { t } = useLanguage()

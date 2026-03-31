@@ -1,5 +1,21 @@
 import { addMonths, addYears, addWeeks, isBefore, parseISO, startOfDay, startOfYear, format, differenceInMonths, differenceInWeeks } from 'date-fns'
 
+export type BillingCycle = 'monthly' | 'yearly' | 'weekly' | 'one-time'
+
+export function getMonthlyEquivalent(price: number, cycle: BillingCycle | string): number {
+  if (cycle === 'yearly')   return price / 12
+  if (cycle === 'weekly')   return price * 4.33
+  if (cycle === 'one-time') return 0
+  return price
+}
+
+export function getYearlyEquivalent(price: number, cycle: BillingCycle | string): number {
+  if (cycle === 'yearly')   return price
+  if (cycle === 'weekly')   return price * 52
+  if (cycle === 'one-time') return 0
+  return price * 12
+}
+
 /**
  * Given a start date and billing cycle, returns the next upcoming renewal date.
  * Returns null for one-time payments or missing data.

@@ -3,19 +3,12 @@
 import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useBudget } from '@/hooks/useBudget'
 import { useLanguage } from '@/components/LanguageProvider'
-import { BILLING_STATUSES } from '@/lib/renewalUtils'
+import { BILLING_STATUSES, getMonthlyEquivalent } from '@/lib/renewalUtils'
 import BudgetBanner from '@/components/BudgetBanner'
 import AdobeUsageChecker from '@/components/AdobeUsageChecker'
 import DashboardStats from '@/components/dashboard/DashboardStats'
 import DashboardContent from '@/components/dashboard/DashboardContent'
 import SavingsBanner from '@/components/dashboard/SavingsBanner'
-
-function getMonthlyEquivalent(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.33
-  if (cycle === 'one-time') return 0
-  return price
-}
 
 function StatsSkeleton() {
   return (

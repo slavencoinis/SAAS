@@ -3,14 +3,7 @@
 import { PiggyBank } from 'lucide-react'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
-import { paidThisYear } from '@/lib/renewalUtils'
-
-function getYearlyEquivalent(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price
-  if (cycle === 'weekly')   return price * 52
-  if (cycle === 'one-time') return 0
-  return price * 12
-}
+import { paidThisYear, getYearlyEquivalent } from '@/lib/renewalUtils'
 
 export default function SavingsBanner({ subscriptions }: { subscriptions: Subscription[] }) {
   const { t } = useLanguage()
