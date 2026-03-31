@@ -58,40 +58,36 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       const supabase = createClient()
       await supabase.auth.signOut()
     }
-    // Full page navigation so server gets the cleared cookie immediately
     window.location.replace('/login')
   }
 
   const handleNavClick = () => {
-    // Close mobile drawer after navigation
     onMobileClose?.()
   }
 
   return (
     <aside
       className={[
-        // Base
-        'w-64 bg-gray-900 text-white flex flex-col shrink-0',
-        // Mobile: fixed overlay, slides in from left
+        'w-60 flex flex-col shrink-0',
         'fixed inset-y-0 left-0 z-30 transition-transform duration-200 ease-in-out',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
-        // Desktop: static, always visible
         'lg:static lg:translate-x-0 lg:h-screen',
       ].join(' ')}
+      style={{ background: 'var(--card)', borderRight: '1px solid var(--card-border)' }}
     >
       {/* ── Logo ──────────────────────────────────────────────────────────── */}
-      <div className="px-5 py-5 border-b border-gray-700/60 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <OptiStackMark size={34} />
+      <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: '1px solid var(--card-border)' }}>
+        <div className="flex items-center gap-2.5">
+          <OptiStackMark size={32} />
           <div className="leading-none">
-            <span className="text-[17px] font-bold tracking-tight text-white">Opti</span>
-            <span className="text-[17px] font-bold tracking-tight text-indigo-400">Stack</span>
+            <span className="text-[16px] font-bold tracking-tight" style={{ color: 'var(--foreground)' }}>Opti</span>
+            <span className="text-[16px] font-bold tracking-tight text-indigo-500">Stack</span>
           </div>
         </div>
-        {/* Close button — mobile only */}
         <button
           onClick={onMobileClose}
-          className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+          className="lg:hidden p-1.5 rounded-lg transition-colors"
+          style={{ color: 'var(--muted)' }}
           aria-label="Close menu"
         >
           <X className="w-4 h-4" />
@@ -99,7 +95,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       </div>
 
       {/* ── Navigation ────────────────────────────────────────────────────── */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
@@ -107,13 +103,14 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
               key={href}
               href={href}
               onClick={handleNavClick}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[13px] font-medium transition-all ${
                 active
-                  ? 'bg-indigo-600 text-white'
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-white/5'
               }`}
+              style={!active ? { color: 'var(--muted)' } : {}}
             >
-              <Icon className="w-5 h-5 shrink-0" />
+              <Icon className="w-4 h-4 shrink-0" />
               {label}
             </Link>
           )
@@ -121,32 +118,36 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       </nav>
 
       {/* ── Language + Theme ──────────────────────────────────────────────── */}
-      <div className="px-3 py-2 border-t border-gray-700 flex items-center gap-2">
-        {/* Language */}
-        <div className="flex gap-0.5 bg-gray-800 rounded-md p-0.5 flex-1">
+      <div className="px-3 py-2.5 flex items-center gap-2" style={{ borderTop: '1px solid var(--card-border)' }}>
+        <div className="flex gap-0.5 rounded-lg p-0.5 flex-1" style={{ background: 'var(--background)' }}>
           {langOptions.map(({ value, label }) => (
             <button
               key={value}
               onClick={() => setLang(value)}
-              className={`flex-1 py-1 rounded text-[11px] font-semibold transition-colors ${
-                lang === value ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 py-1 rounded-md text-[11px] font-semibold transition-all ${
+                lang === value
+                  ? 'bg-indigo-500 text-white shadow-sm'
+                  : 'hover:text-gray-600 dark:hover:text-gray-300'
               }`}
+              style={lang !== value ? { color: 'var(--muted)' } : {}}
             >
               {label}
             </button>
           ))}
         </div>
 
-        {/* Theme */}
-        <div className="flex gap-0.5 bg-gray-800 rounded-md p-0.5 flex-1">
+        <div className="flex gap-0.5 rounded-lg p-0.5 flex-1" style={{ background: 'var(--background)' }}>
           {themeOptions.map(({ value, icon: Icon, labelKey }) => (
             <button
               key={value}
               onClick={() => setPreference(value)}
               title={t(labelKey)}
-              className={`flex-1 flex items-center justify-center py-1 rounded transition-colors ${
-                preference === value ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'
+              className={`flex-1 flex items-center justify-center py-1 rounded-md transition-all ${
+                preference === value
+                  ? 'bg-indigo-500 text-white shadow-sm'
+                  : 'hover:text-gray-600 dark:hover:text-gray-300'
               }`}
+              style={preference !== value ? { color: 'var(--muted)' } : {}}
             >
               <Icon className="w-3 h-3" />
             </button>
@@ -155,12 +156,13 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       </div>
 
       {/* ── Logout ────────────────────────────────────────────────────────── */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-3" style={{ borderTop: '1px solid var(--card-border)' }}>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+          className="flex items-center gap-3 px-3.5 py-2.5 w-full rounded-xl text-[13px] font-medium transition-all hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10 dark:hover:text-red-400"
+          style={{ color: 'var(--muted)' }}
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4 shrink-0" />
           {t('nav_sign_out')}
         </button>
       </div>

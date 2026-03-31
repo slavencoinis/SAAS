@@ -145,31 +145,30 @@ export default function SubscriptionForm({ subscription }: Props) {
   }
 
   // ─── Shared class strings ────────────────────────────────────────────────
-  const inputCls = [
-    'w-full px-3 py-2 rounded-lg text-sm',
-    'border border-gray-300 dark:border-gray-600',
-    'bg-white dark:bg-gray-800',
-    'text-gray-900 dark:text-gray-100',
-    'placeholder:text-gray-400 dark:placeholder:text-gray-500',
-    'focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400',
-    'transition-colors',
-  ].join(' ')
+  const inputCls = 'w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all'
+  const inputStyle = {
+    background: 'var(--input-bg)',
+    border: '1px solid var(--input-border)',
+    color: 'var(--input-text)',
+  }
 
-  const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
+  const labelCls = 'block text-[11px] font-semibold uppercase tracking-wide mb-1.5'
+  const labelStyle = { color: 'var(--muted)' }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 px-4 py-3 rounded-xl text-sm">
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={labelCls}>{t('form_name')}</label>
+          <label className={labelCls} style={labelStyle}>{t('form_name')}</label>
           <input
             className={inputCls}
+            style={inputStyle}
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             placeholder="npr. GitHub, Figma..."
@@ -177,9 +176,10 @@ export default function SubscriptionForm({ subscription }: Props) {
           />
         </div>
         <div>
-          <label className={labelCls}>{t('form_url')}</label>
+          <label className={labelCls} style={labelStyle}>{t('form_url')}</label>
           <input
             className={inputCls}
+            style={inputStyle}
             value={form.url ?? ''}
             onChange={(e) => set('url', e.target.value)}
             placeholder="https://..."
@@ -189,9 +189,10 @@ export default function SubscriptionForm({ subscription }: Props) {
       </div>
 
       <div>
-        <label className={labelCls}>{t('form_description')}</label>
+        <label className={labelCls} style={labelStyle}>{t('form_description')}</label>
         <input
           className={inputCls}
+          style={inputStyle}
           value={form.description ?? ''}
           onChange={(e) => set('description', e.target.value)}
           placeholder={t('form_desc_placeholder')}
@@ -200,9 +201,10 @@ export default function SubscriptionForm({ subscription }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className={labelCls}>{t('form_price')}</label>
+          <label className={labelCls} style={labelStyle}>{t('form_price')}</label>
           <input
             className={inputCls}
+            style={inputStyle}
             value={form.price}
             onChange={(e) => set('price', e.target.value === '' ? 0 : parseFloat(e.target.value))}
             type="number"
@@ -212,8 +214,8 @@ export default function SubscriptionForm({ subscription }: Props) {
           />
         </div>
         <div>
-          <label className={labelCls}>{t('form_currency')}</label>
-          <select className={inputCls} value={form.currency} onChange={(e) => set('currency', e.target.value)}>
+          <label className={labelCls} style={labelStyle}>{t('form_currency')}</label>
+          <select className={inputCls} style={inputStyle} value={form.currency} onChange={(e) => set('currency', e.target.value)}>
             <option>EUR</option>
             <option>USD</option>
             <option>BAM</option>
@@ -222,8 +224,8 @@ export default function SubscriptionForm({ subscription }: Props) {
           </select>
         </div>
         <div>
-          <label className={labelCls}>{t('form_billing_cycle')}</label>
-          <select className={inputCls} value={form.billing_cycle} onChange={(e) => set('billing_cycle', e.target.value)}>
+          <label className={labelCls} style={labelStyle}>{t('form_billing_cycle')}</label>
+          <select className={inputCls} style={inputStyle} value={form.billing_cycle} onChange={(e) => set('billing_cycle', e.target.value)}>
             <option value="monthly">{t('billing_monthly')}</option>
             <option value="yearly">{t('billing_yearly')}</option>
             <option value="weekly">{t('billing_weekly')}</option>
@@ -234,18 +236,20 @@ export default function SubscriptionForm({ subscription }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className={labelCls}>{t('form_start_date')}</label>
+          <label className={labelCls} style={labelStyle}>{t('form_start_date')}</label>
           <input
             className={inputCls}
+            style={inputStyle}
             value={form.start_date ?? ''}
             onChange={(e) => set('start_date', e.target.value)}
             type="date"
           />
         </div>
         <div>
-          <label className={labelCls}>{t('form_renewal_date')}</label>
+          <label className={labelCls} style={labelStyle}>{t('form_renewal_date')}</label>
           <input
             className={inputCls}
+            style={inputStyle}
             value={form.renewal_date ?? ''}
             onChange={(e) => set('renewal_date', e.target.value)}
             type="date"
@@ -255,8 +259,8 @@ export default function SubscriptionForm({ subscription }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className={labelCls}>{t('form_status')}</label>
-          <select className={inputCls} value={form.status} onChange={(e) => set('status', e.target.value)}>
+          <label className={labelCls} style={labelStyle}>{t('form_status')}</label>
+          <select className={inputCls} style={inputStyle} value={form.status} onChange={(e) => set('status', e.target.value)}>
             <option value="active">{t('status_active')}</option>
             <option value="trial">{t('status_trial')}</option>
             <option value="paused">{t('status_paused')}</option>
@@ -265,8 +269,8 @@ export default function SubscriptionForm({ subscription }: Props) {
           </select>
         </div>
         <div>
-          <label className={labelCls}>{t('form_usage_status')}</label>
-          <select className={inputCls} value={form.usage_status} onChange={(e) => set('usage_status', e.target.value)}>
+          <label className={labelCls} style={labelStyle}>{t('form_usage_status')}</label>
+          <select className={inputCls} style={inputStyle} value={form.usage_status} onChange={(e) => set('usage_status', e.target.value)}>
             <option value="high">{t('usage_high')}</option>
             <option value="medium">{t('usage_medium')}</option>
             <option value="low">{t('usage_low')}</option>
@@ -275,8 +279,8 @@ export default function SubscriptionForm({ subscription }: Props) {
           </select>
         </div>
         <div>
-          <label className={labelCls}>{t('form_category')}</label>
-          <select className={inputCls} value={form.category ?? 'other'} onChange={(e) => set('category', e.target.value)}>
+          <label className={labelCls} style={labelStyle}>{t('form_category')}</label>
+          <select className={inputCls} style={inputStyle} value={form.category ?? 'other'} onChange={(e) => set('category', e.target.value)}>
             <option value="productivity">{t('cat_productivity')}</option>
             <option value="development">{t('cat_development')}</option>
             <option value="design">{t('cat_design')}</option>
@@ -289,9 +293,10 @@ export default function SubscriptionForm({ subscription }: Props) {
       </div>
 
       <div>
-        <label className={labelCls}>{t('form_notes')}</label>
+        <label className={labelCls} style={labelStyle}>{t('form_notes')}</label>
         <textarea
           className={inputCls}
+          style={inputStyle}
           value={form.notes ?? ''}
           onChange={(e) => set('notes', e.target.value)}
           rows={3}
@@ -300,10 +305,10 @@ export default function SubscriptionForm({ subscription }: Props) {
       </div>
 
       {/* API Key Linked toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 px-4 py-3">
+      <div className="flex items-center justify-between rounded-xl px-4 py-3.5" style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}>
         <div>
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('form_api_key_title')}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
+          <p className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>{t('form_api_key_title')}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
             {t('form_api_key_desc')}
           </p>
         </div>
@@ -312,7 +317,7 @@ export default function SubscriptionForm({ subscription }: Props) {
           role="switch"
           aria-checked={form.api_key_linked ?? false}
           onClick={() => set('api_key_linked', !(form.api_key_linked ?? false))}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
             form.api_key_linked ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-600'
           }`}
         >
@@ -328,14 +333,15 @@ export default function SubscriptionForm({ subscription }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+          className="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors"
         >
           {loading ? t('btn_saving') : subscription ? t('btn_save_changes') : t('btn_add_service')}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="px-6 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="px-6 py-2.5 text-sm font-medium rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+          style={{ border: '1px solid var(--card-border)', color: 'var(--foreground)' }}
         >
           {t('btn_cancel')}
         </button>

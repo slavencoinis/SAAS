@@ -10,6 +10,12 @@ import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import CostByCategoryChart from '@/components/charts/CostByCategoryChart'
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart'
 
+const card = {
+  background: 'var(--card)',
+  border: '1px solid var(--card-border)',
+  boxShadow: 'var(--shadow-sm)',
+}
+
 export default function DashboardContent({ subscriptions }: { subscriptions: Subscription[] }) {
   const { t } = useLanguage()
   const today = new Date()
@@ -32,12 +38,12 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
       {/* Charts */}
       {active.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('chart_by_category')}</h2>
+          <div className="rounded-2xl p-6" style={card}>
+            <h2 className="text-sm font-semibold mb-5" style={{ color: 'var(--foreground)' }}>{t('chart_by_category')}</h2>
             <CostByCategoryChart subscriptions={subscriptions} />
           </div>
-          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">{t('chart_monthly_trend')}</h2>
+          <div className="rounded-2xl p-6" style={card}>
+            <h2 className="text-sm font-semibold mb-5" style={{ color: 'var(--foreground)' }}>{t('chart_monthly_trend')}</h2>
             <MonthlyTrendChart subscriptions={subscriptions} />
           </div>
         </div>
@@ -45,28 +51,28 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
 
       {/* Expiring + Unused */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        <div className="rounded-2xl p-6" style={card}>
+          <h2 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
             {t('section_expiring_soon')}
           </h2>
           {expiringSoon.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">{t('no_expiring')}</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('no_expiring')}</p>
           ) : (
             <div className="space-y-3">
               {expiringSoon.slice(0, 5).map((s) => {
                 const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)!
                 const days = differenceInDays(d, today)
                 return (
-                  <div key={s.id} className="flex items-center justify-between">
+                  <div key={s.id} className="flex items-center justify-between py-1">
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{formatRenewal(d)}</p>
+                      <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{s.name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{formatRenewal(d)}</p>
                     </div>
-                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                       days <= 7
-                        ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400'
-                        : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400'
+                        ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'
+                        : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400'
                     }`}>
                       {days === 0 ? t('today') : `${days}d`}
                     </span>
@@ -77,20 +83,20 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <XCircle className="w-4 h-4 text-red-500" />
+        <div className="rounded-2xl p-6" style={card}>
+          <h2 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+            <XCircle className="w-4 h-4 text-rose-500" />
             {t('section_unused')}
           </h2>
           {unused.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">{t('no_unused')}</p>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('no_unused')}</p>
           ) : (
             <div className="space-y-3">
               {unused.map((s) => (
-                <div key={s.id} className="flex items-center justify-between">
+                <div key={s.id} className="flex items-center justify-between py-1">
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">{s.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{s.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>
                       {s.currency} {s.price}/{
                         s.billing_cycle === 'monthly' ? t('cycle_short_monthly') :
                         s.billing_cycle === 'yearly'  ? t('cycle_short_yearly') :
@@ -99,16 +105,16 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
                       }
                     </p>
                   </div>
-                  <Link href={`/subscriptions/${s.id}/edit`} className="text-xs text-indigo-500 hover:underline">{t('edit')}</Link>
+                  <Link href={`/subscriptions/${s.id}/edit`} className="text-xs font-medium text-indigo-500 hover:text-indigo-600 hover:underline">{t('edit')}</Link>
                 </div>
               ))}
             </div>
           )}
           {unused.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-4 pt-4" style={{ borderTop: '1px solid var(--card-border)' }}>
+              <p className="text-xs" style={{ color: 'var(--muted)' }}>
                 {t('potential_savings')}{' '}
-                <span className="font-semibold text-red-600 dark:text-red-400">
+                <span className="font-semibold text-rose-600 dark:text-rose-400">
                   €{unused.reduce((s, sub) => s + getMonthlyEquivalent(sub.price, sub.billing_cycle), 0).toFixed(2)}/{t('cycle_short_monthly')}
                 </span>
               </p>
@@ -118,15 +124,15 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
       </div>
 
       {/* All services table */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900 dark:text-white">{t('section_all_services')}</h2>
-          <Link href="/subscriptions" className="text-sm text-indigo-500 hover:underline">{t('see_all')}</Link>
+      <div className="rounded-2xl p-6" style={card}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-[13px] font-semibold" style={{ color: 'var(--foreground)' }}>{t('section_all_services')}</h2>
+          <Link href="/subscriptions" className="text-xs font-medium text-indigo-500 hover:underline">{t('see_all')}</Link>
         </div>
         {subscriptions.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">{t('no_services_yet')}</p>
-            <Link href="/subscriptions/new" className="inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700">
+          <div className="text-center py-10">
+            <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>{t('no_services_yet')}</p>
+            <Link href="/subscriptions/new" className="inline-flex px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700">
               {t('add_first_service')}
             </Link>
           </div>
@@ -134,30 +140,30 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100 dark:border-gray-800">
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_name')}</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_price')}</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_short_renewal')}</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_status')}</th>
-                  <th className="text-left py-2 px-3 text-xs font-medium text-gray-500 dark:text-gray-400">{t('col_usage')}</th>
+                <tr style={{ borderBottom: '1px solid var(--card-border)' }}>
+                  <th className="text-left py-2.5 px-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('col_name')}</th>
+                  <th className="text-left py-2.5 px-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('col_price')}</th>
+                  <th className="text-left py-2.5 px-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('col_short_renewal')}</th>
+                  <th className="text-left py-2.5 px-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('col_status')}</th>
+                  <th className="text-left py-2.5 px-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('col_usage')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+              <tbody>
                 {subscriptions.slice(0, 8).map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <td className="py-2.5 px-3">
-                      <Link href={`/subscriptions/${s.id}`} className="font-medium text-gray-900 dark:text-white hover:text-indigo-500">
+                  <tr key={s.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors" style={{ borderBottom: '1px solid var(--card-border)' }}>
+                    <td className="py-3 px-3">
+                      <Link href={`/subscriptions/${s.id}`} className="font-medium hover:text-indigo-500 transition-colors" style={{ color: 'var(--foreground)' }}>
                         {s.name}
                       </Link>
                     </td>
-                    <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
+                    <td className="py-3 px-3 text-sm" style={{ color: 'var(--muted)' }}>
                       {s.currency} {s.price}/{s.billing_cycle === 'monthly' ? t('cycle_short_monthly') : s.billing_cycle === 'yearly' ? t('cycle_short_yearly') : s.billing_cycle}
                     </td>
-                    <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
+                    <td className="py-3 px-3 text-sm" style={{ color: 'var(--muted)' }}>
                       {formatRenewal(getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle))}
                     </td>
-                    <td className="py-2.5 px-3"><StatusBadge status={s.status} /></td>
-                    <td className="py-2.5 px-3"><UsageBadge usage={s.usage_status} /></td>
+                    <td className="py-3 px-3"><StatusBadge status={s.status} /></td>
+                    <td className="py-3 px-3"><UsageBadge usage={s.usage_status} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -169,15 +175,15 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
       {/* Cost summary */}
       {subscriptions.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 rounded-xl p-4">
-            <p className="text-sm font-medium text-indigo-900 dark:text-indigo-300">{t('yearly_cost')}</p>
-            <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mt-1">€{yearlyTotal.toFixed(2)}</p>
-            <p className="text-xs text-indigo-500 dark:text-indigo-500 mt-1">{active.length} {t('active_services_count')}</p>
+          <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-500">{t('yearly_cost')}</p>
+            <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mt-1.5">€{yearlyTotal.toFixed(2)}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{active.length} {t('active_services_count')}</p>
           </div>
-          <div className="bg-green-50 dark:bg-green-950/50 border border-green-100 dark:border-green-900 rounded-xl p-4">
-            <p className="text-sm font-medium text-green-900 dark:text-green-300">{t('monthly_cost_total')}</p>
-            <p className="text-2xl font-bold text-green-700 dark:text-green-400 mt-1">€{monthlyTotal.toFixed(2)}</p>
-            <p className="text-xs text-green-500 dark:text-green-500 mt-1">~€{(monthlyTotal / (active.length || 1)).toFixed(2)} / {t('active_services_count')}</p>
+          <div className="rounded-2xl p-5" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">{t('monthly_cost_total')}</p>
+            <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-400 mt-1.5">€{monthlyTotal.toFixed(2)}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>~€{(monthlyTotal / (active.length || 1)).toFixed(2)} / {t('active_services_count')}</p>
           </div>
         </div>
       )}
