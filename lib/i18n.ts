@@ -232,6 +232,9 @@ export const translations = {
     csv_import_ok:     'servisa uvezeno',
     csv_import_err:    'Greška pri uvozu CSV',
     csv_import_demo:   'Demo mod — uvezeni servisi su privremeni',
+
+    error_title:       'Nešto je pošlo po krivu',
+    error_retry:       'Pokušaj ponovo',
   },
 
   en: {
@@ -465,6 +468,9 @@ export const translations = {
     csv_import_ok:     'services imported',
     csv_import_err:    'CSV import error',
     csv_import_demo:   'Demo mode — imported services are temporary',
+
+    error_title:       'Something went wrong',
+    error_retry:       'Try again',
   },
 } satisfies Record<Language, Record<string, string>>
 

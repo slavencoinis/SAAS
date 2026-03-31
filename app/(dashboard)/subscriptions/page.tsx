@@ -5,7 +5,7 @@ import { useSubscriptions } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
 import { Subscription } from '@/types/subscription'
 import { differenceInDays, parseISO } from 'date-fns'
-import { getDisplayRenewal, formatRenewal } from '@/lib/renewalUtils'
+import { getDisplayRenewal, formatRenewal, getMonthlyEquivalent, getYearlyEquivalent, BillingCycle } from '@/lib/renewalUtils'
 import Link from 'next/link'
 import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
@@ -23,24 +23,10 @@ const PAGE_SIZE = 20
 
 // ─── Price normalisation ──────────────────────────────────────────────────────
 
-function toMonthly(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price / 12
-  if (cycle === 'weekly')   return price * 4.333
-  if (cycle === 'one-time') return 0
-  return price
-}
-
-function toYearly(price: number, cycle: string): number {
-  if (cycle === 'yearly')   return price
-  if (cycle === 'weekly')   return price * 52
-  if (cycle === 'one-time') return 0
-  return price * 12
-}
-
 /** Return normalised price + suffix label for the chosen view period */
 function normalisePrice(
   price: number,
-  cycle: string,
+  cycle: BillingCycle,
   currency: string,
   view: ViewPeriod,
   cycleShortMo: string,
@@ -49,9 +35,9 @@ function normalisePrice(
   if (cycle === 'one-time') return { amount: `${currency} ${price}`, suffix: '', approx: false }
   const approx = (view === 'monthly' && cycle !== 'monthly') || (view === 'yearly' && cycle !== 'yearly')
   if (view === 'monthly') {
-    return { amount: `${currency} ${toMonthly(price, cycle).toFixed(2)}`, suffix: `/${cycleShortMo}`, approx }
+    return { amount: `${currency} ${getMonthlyEquivalent(price, cycle).toFixed(2)}`, suffix: `/${cycleShortMo}`, approx }
   }
-  return { amount: `${currency} ${toYearly(price, cycle).toFixed(2)}`, suffix: `/${cycleShortYr}`, approx }
+  return { amount: `${currency} ${getYearlyEquivalent(price, cycle).toFixed(2)}`, suffix: `/${cycleShortYr}`, approx }
 }
 
 // ─── Sort helpers ─────────────────────────────────────────────────────────────
@@ -71,7 +57,7 @@ function sortSubscriptions(list: Subscription[], key: SortKey, dir: SortDir): Su
       case 'category':
         return (a.category ?? 'other').localeCompare(b.category ?? 'other')
       case 'price':
-        return toMonthly(a.price, a.billing_cycle) - toMonthly(b.price, b.billing_cycle)
+        return getMonthlyEquivalent(a.price, a.billing_cycle) - getMonthlyEquivalent(b.price, b.billing_cycle)
       case 'renewal': {
         const da = getDisplayRenewal(a.renewal_date, a.start_date, a.billing_cycle)
         const db = getDisplayRenewal(b.renewal_date, b.start_date, b.billing_cycle)

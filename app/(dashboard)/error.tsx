@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
+import { useLanguage } from '@/components/LanguageProvider'
 
 export default function DashboardError({
   error,
@@ -10,6 +11,8 @@ export default function DashboardError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const { t } = useLanguage()
+
   useEffect(() => {
     console.error(error)
   }, [error])
@@ -20,14 +23,14 @@ export default function DashboardError({
         <AlertTriangle className="w-8 h-8 text-red-500" />
       </div>
       <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Nešto je pošlo po krivu</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('error_title')}</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{error.message}</p>
       </div>
       <button
         onClick={reset}
         className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
       >
-        Pokušaj ponovo
+        {t('error_retry')}
       </button>
     </div>
   )

@@ -24,6 +24,7 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const isDemoMode = request.cookies.get('demo_mode')?.value === '1'
 
   const { pathname } = request.nextUrl
   const isAuthRoute = pathname.startsWith('/login') || pathname.startsWith('/signup')
@@ -32,15 +33,15 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/integrations') ||
     pathname.startsWith('/settings')
 
-  // Redirect unauthenticated users away from protected routes
-  if (!user && isProtectedRoute) {
+  // Redirect unauthenticated non-demo users away from protected routes
+  if (!user && !isDemoMode && isProtectedRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from auth routes
-  if (user && isAuthRoute) {
+  // Redirect authenticated (or demo) users away from auth routes
+  if ((user || isDemoMode) && isAuthRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)

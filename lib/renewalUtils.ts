@@ -1,6 +1,7 @@
 import { addMonths, addYears, addWeeks, isBefore, parseISO, startOfDay, startOfYear, format, differenceInMonths, differenceInWeeks } from 'date-fns'
+import { BillingCycle } from '@/types/subscription'
 
-export type BillingCycle = 'monthly' | 'yearly' | 'weekly' | 'one-time'
+export type { BillingCycle }
 
 export function getMonthlyEquivalent(price: number, cycle: BillingCycle): number {
   if (cycle === 'yearly')   return price / 12
