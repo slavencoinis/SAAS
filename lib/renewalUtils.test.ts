@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { format } from 'date-fns'
-import { calcNextRenewal, getDisplayRenewal, formatRenewal, paidThisYear } from './renewalUtils'
+import { calcNextRenewal, getDisplayRenewal, formatRenewal, paidThisYear, getMonthlyEquivalent, getYearlyEquivalent } from './renewalUtils'
 
 // Fix "today" to 2026-03-31 so tests are deterministic
 beforeEach(() => {
@@ -97,5 +97,45 @@ describe('paidThisYear', () => {
 
   it('returns 0 for future start date', () => {
     expect(paidThisYear(100, 'monthly', '2026-05-01')).toBe(0)
+  })
+})
+
+// ─── getMonthlyEquivalent ─────────────────────────────────────────────────────
+
+describe('getMonthlyEquivalent', () => {
+  it('returns price as-is for monthly', () => {
+    expect(getMonthlyEquivalent(100, 'monthly')).toBe(100)
+  })
+
+  it('divides by 12 for yearly', () => {
+    expect(getMonthlyEquivalent(120, 'yearly')).toBeCloseTo(10)
+  })
+
+  it('multiplies by 4.33 for weekly', () => {
+    expect(getMonthlyEquivalent(10, 'weekly')).toBeCloseTo(43.3)
+  })
+
+  it('returns 0 for one-time', () => {
+    expect(getMonthlyEquivalent(99, 'one-time')).toBe(0)
+  })
+})
+
+// ─── getYearlyEquivalent ──────────────────────────────────────────────────────
+
+describe('getYearlyEquivalent', () => {
+  it('returns price as-is for yearly', () => {
+    expect(getYearlyEquivalent(120, 'yearly')).toBe(120)
+  })
+
+  it('multiplies by 12 for monthly', () => {
+    expect(getYearlyEquivalent(10, 'monthly')).toBe(120)
+  })
+
+  it('multiplies by 52 for weekly', () => {
+    expect(getYearlyEquivalent(5, 'weekly')).toBe(260)
+  })
+
+  it('returns 0 for one-time', () => {
+    expect(getYearlyEquivalent(99, 'one-time')).toBe(0)
   })
 })

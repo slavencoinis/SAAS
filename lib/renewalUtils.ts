@@ -2,14 +2,14 @@ import { addMonths, addYears, addWeeks, isBefore, parseISO, startOfDay, startOfY
 
 export type BillingCycle = 'monthly' | 'yearly' | 'weekly' | 'one-time'
 
-export function getMonthlyEquivalent(price: number, cycle: BillingCycle | string): number {
+export function getMonthlyEquivalent(price: number, cycle: BillingCycle): number {
   if (cycle === 'yearly')   return price / 12
   if (cycle === 'weekly')   return price * 4.33
   if (cycle === 'one-time') return 0
   return price
 }
 
-export function getYearlyEquivalent(price: number, cycle: BillingCycle | string): number {
+export function getYearlyEquivalent(price: number, cycle: BillingCycle): number {
   if (cycle === 'yearly')   return price
   if (cycle === 'weekly')   return price * 52
   if (cycle === 'one-time') return 0
