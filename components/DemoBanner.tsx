@@ -1,18 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useState } from 'react'
 import { FlaskConical, X } from 'lucide-react'
 import { isDemoMode, disableDemoMode } from '@/lib/demo'
 import { useLanguage } from '@/components/LanguageProvider'
 
 export default function DemoBanner() {
-  const [show, setShow] = useState(false)
+  const [show] = useState(isDemoMode)
   const { t } = useLanguage()
-
-  useEffect(() => {
-    setShow(isDemoMode())
-  }, [])
 
   if (!show) return null
 

@@ -81,6 +81,7 @@ export const translations = {
     status_paused:           'Pauziran',
     status_cancelled:        'Otkazan',
     status_overlimit:        'Overlimit - Review Needed',
+    status_underutilized:    'Nedovoljno korišćeno',
     status_inactive:         'Neaktivan',
     form_usage_status:       'Status koristenja',
     usage_high:              'Visoko',
@@ -182,6 +183,68 @@ export const translations = {
     openai_all_ok_suffix:'% limita.',
     openai_checked_at:   'Provjereno:',
 
+    // ── GitHub Copilot checker ─────────────────────────────────────────────────
+    github_subtitle_prefix:  'Sjedišta ispod',
+    github_subtitle_suffix:  '% aktivnosti → underutilized',
+    github_check_btn:        'Provjeri Copilot sjedišta',
+    github_checking:         'Provjera...',
+    github_desc:             'Provjerava aktivna GitHub Copilot sjedišta. Sjedišta korišćena u posljednjih 30 dana. Prag:',
+    github_no_services:      'Nema GitHub Copilot servisa',
+    github_no_hint:          'Dodaj servis čiji naziv sadrži "GitHub" ili "Copilot".',
+    github_seats_active:     'sjedišta aktivno',
+    github_seats_used:       'iskorišćeno',
+    github_seats_ok:         'Aktivno',
+    github_waste:            'Mogući otpad',
+    github_pending_cancel:   'čeka otkazivanje',
+    github_below_threshold:  'ispod praga od',
+
+    // ── Slack checker ─────────────────────────────────────────────────────────
+    slack_subtitle_prefix:   'Aktivni korisnici ispod',
+    slack_subtitle_suffix:   '% → underutilized',
+    slack_check_btn:         'Provjeri Slack korištenje',
+    slack_checking:          'Provjera...',
+    slack_desc:              'Provjerava aktivne Slack članove vs ukupne licence. Prag:',
+    slack_no_services:       'Nema Slack servisa',
+    slack_no_hint:           'Dodaj servis čiji naziv sadrži "Slack".',
+    slack_members_active:    'članova aktivno',
+    slack_members_used:      'aktivno',
+    slack_ok:                'Aktivno',
+    slack_plan:              'Plan',
+    slack_waste:             'Mogući otpad',
+    slack_guests:            'gostiju',
+    slack_below_threshold:   'ispod praga od',
+
+    // ── AWS Cost Explorer ─────────────────────────────────────────────────────
+    aws_subtitle_prefix:     'Skok troškova ≥',
+    aws_subtitle_suffix:     '% → overlimit',
+    aws_check_btn:           'Provjeri AWS troškove',
+    aws_checking:            'Provjera...',
+    aws_desc:                'Provjerava AWS Cost Explorer za tekući i prethodni mesec. Skok >20% označava servis kao overlimit.',
+    aws_no_services:         'Nema AWS servisa',
+    aws_no_hint:             'Dodaj servis čiji naziv sadrži "AWS", "Amazon" ili "EC2".',
+    aws_current_month:       'Ovaj mj.',
+    aws_vs_last_month:       'vs. prošli mj.',
+    aws_forecast:            'Prognoza',
+    aws_ok:                  'Stabilan',
+    aws_cost_spike:          'Skok troškova ≥',
+    aws_threshold_exceeded:  '— označen kao overlimit',
+
+    // ── Google Workspace checker ──────────────────────────────────────────────
+    google_subtitle_prefix:  'Aktivni korisnici ispod',
+    google_subtitle_suffix:  '% → underutilized',
+    google_check_btn:        'Provjeri Workspace',
+    google_checking:         'Provjera...',
+    google_desc:             'Provjerava Google Workspace licence i aktivnost korisnika. Prag aktivnosti:',
+    google_no_services:      'Nema Google Workspace servisa',
+    google_no_hint:          'Dodaj servis čiji naziv sadrži "Google Workspace", "GSuite" ili "Google Apps".',
+    google_users_active:     'korisnika aktivno',
+    google_licenses_active:  'aktivno',
+    google_ok:               'Aktivno',
+    google_plan:             'Plan',
+    google_waste:            'Mogući otpad',
+    google_storage:          'Pohrana',
+    google_below_threshold:  'ispod praga od',
+
     // ── Billing cycle short labels ────────────────────────────────────────────
     cycle_short_monthly: 'mj',
     cycle_short_yearly:  'god',
@@ -251,6 +314,30 @@ export const translations = {
     csv_import_ok:     'servisa uvezeno',
     csv_import_err:    'Greška pri uvozu CSV',
     csv_import_demo:   'Demo mod — uvezeni servisi su privremeni',
+
+    // ── View toggle + sort ────────────────────────────────────────────────────
+    view_table:          'Tabela',
+    view_cards:          'Kartice',
+    sort_value:          'Vrijednost',
+    col_value:           'Vrijednost',
+
+    // ── Cost breakdown ────────────────────────────────────────────────────────
+    breakdown_monthly:   'Mj.',
+    breakdown_yearly:    'God.',
+    breakdown_services:  'Serv.',
+
+    // ── Quick add ─────────────────────────────────────────────────────────────
+    quick_add_title:     'Dodaj servis',
+    quick_add_hint:      'Brzo dodavanje novog SaaS servisa',
+
+    // ── Bulk akcije ───────────────────────────────────────────────────────────
+    bulk_selected:       'selektovano',
+    bulk_delete:         'Obriši',
+    bulk_delete_confirm: 'Obrisati {n} servis(a)?',
+    bulk_change_status:  'Promijeni status',
+    bulk_deselect:       'Poništi selekciju',
+    bulk_deleting:       'Brisanje...',
+    bulk_changing:       'Mijenjam...',
 
     error_title:       'Nešto je pošlo po krivu',
     error_retry:       'Pokušaj ponovo',
@@ -336,6 +423,7 @@ export const translations = {
     status_paused:           'Paused',
     status_cancelled:        'Cancelled',
     status_overlimit:        'Overlimit - Review Needed',
+    status_underutilized:    'Underutilized',
     status_inactive:         'Inactive',
     form_usage_status:       'Usage status',
     usage_high:              'High',
@@ -437,6 +525,68 @@ export const translations = {
     openai_all_ok_suffix:'% of the limit.',
     openai_checked_at:   'Checked:',
 
+    // ── GitHub Copilot checker ─────────────────────────────────────────────────
+    github_subtitle_prefix:  'Seats below',
+    github_subtitle_suffix:  '% activity → underutilized',
+    github_check_btn:        'Check Copilot seats',
+    github_checking:         'Checking...',
+    github_desc:             'Checks active GitHub Copilot seats. Seats used in the last 30 days. Threshold:',
+    github_no_services:      'No GitHub Copilot services',
+    github_no_hint:          'Add a service whose name contains "GitHub" or "Copilot".',
+    github_seats_active:     'seats active',
+    github_seats_used:       'utilised',
+    github_seats_ok:         'Active',
+    github_waste:            'Potential waste',
+    github_pending_cancel:   'pending cancellation',
+    github_below_threshold:  'below threshold of',
+
+    // ── Slack checker ─────────────────────────────────────────────────────────
+    slack_subtitle_prefix:   'Active users below',
+    slack_subtitle_suffix:   '% → underutilized',
+    slack_check_btn:         'Check Slack usage',
+    slack_checking:          'Checking...',
+    slack_desc:              'Checks active Slack members vs total licensed seats. Threshold:',
+    slack_no_services:       'No Slack services',
+    slack_no_hint:           'Add a service whose name contains "Slack".',
+    slack_members_active:    'members active',
+    slack_members_used:      'active',
+    slack_ok:                'Active',
+    slack_plan:              'Plan',
+    slack_waste:             'Potential waste',
+    slack_guests:            'guests',
+    slack_below_threshold:   'below threshold of',
+
+    // ── AWS Cost Explorer ─────────────────────────────────────────────────────
+    aws_subtitle_prefix:     'Cost spike ≥',
+    aws_subtitle_suffix:     '% → overlimit',
+    aws_check_btn:           'Check AWS costs',
+    aws_checking:            'Checking...',
+    aws_desc:                'Checks AWS Cost Explorer for current and previous month. A spike >20% marks the service as overlimit.',
+    aws_no_services:         'No AWS services',
+    aws_no_hint:             'Add a service whose name contains "AWS", "Amazon" or "EC2".',
+    aws_current_month:       'This mo.',
+    aws_vs_last_month:       'vs. last mo.',
+    aws_forecast:            'Forecast',
+    aws_ok:                  'Stable',
+    aws_cost_spike:          'Cost spike ≥',
+    aws_threshold_exceeded:  '— marked as overlimit',
+
+    // ── Google Workspace checker ──────────────────────────────────────────────
+    google_subtitle_prefix:  'Active users below',
+    google_subtitle_suffix:  '% → underutilized',
+    google_check_btn:        'Check Workspace',
+    google_checking:         'Checking...',
+    google_desc:             'Checks Google Workspace licences and user activity. Activity threshold:',
+    google_no_services:      'No Google Workspace services',
+    google_no_hint:          'Add a service whose name contains "Google Workspace", "GSuite" or "Google Apps".',
+    google_users_active:     'users active',
+    google_licenses_active:  'active',
+    google_ok:               'Active',
+    google_plan:             'Plan',
+    google_waste:            'Potential waste',
+    google_storage:          'Storage',
+    google_below_threshold:  'below threshold of',
+
     // ── Billing cycle short labels ────────────────────────────────────────────
     cycle_short_monthly: 'mo',
     cycle_short_yearly:  'yr',
@@ -506,6 +656,30 @@ export const translations = {
     csv_import_ok:     'services imported',
     csv_import_err:    'CSV import error',
     csv_import_demo:   'Demo mode — imported services are temporary',
+
+    // ── View toggle + sort ────────────────────────────────────────────────────
+    view_table:          'Table',
+    view_cards:          'Cards',
+    sort_value:          'Value',
+    col_value:           'Value',
+
+    // ── Cost breakdown ────────────────────────────────────────────────────────
+    breakdown_monthly:   'Mo.',
+    breakdown_yearly:    'Yr.',
+    breakdown_services:  'Svc.',
+
+    // ── Quick add ─────────────────────────────────────────────────────────────
+    quick_add_title:     'Add service',
+    quick_add_hint:      'Quickly add a new SaaS service',
+
+    // ── Bulk actions ──────────────────────────────────────────────────────────
+    bulk_selected:       'selected',
+    bulk_delete:         'Delete',
+    bulk_delete_confirm: 'Delete {n} service(s)?',
+    bulk_change_status:  'Change status',
+    bulk_deselect:       'Deselect all',
+    bulk_deleting:       'Deleting...',
+    bulk_changing:       'Updating...',
 
     error_title:       'Something went wrong',
     error_retry:       'Try again',

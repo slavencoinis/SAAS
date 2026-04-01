@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
 import { getMonthlyEquivalent } from '@/lib/renewalUtils'

@@ -13,16 +13,13 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>('system')
-  const [resolved, setResolved] = useState<'light' | 'dark'>('dark')
-
-  // On mount, read saved preference from localStorage
-  useEffect(() => {
+  const [preference, setPreferenceState] = useState<ThemePreference>(() => {
+    if (typeof window === 'undefined') return 'system'
     const saved = localStorage.getItem('theme-preference') as ThemePreference | null
-    if (saved && ['system', 'light', 'dark'].includes(saved)) {
-      setPreferenceState(saved)
-    }
-  }, [])
+    if (saved && ['system', 'light', 'dark'].includes(saved)) return saved
+    return 'system'
+  })
+  const [resolved, setResolved] = useState<'light' | 'dark'>('dark')
 
   // Whenever preference changes, apply .dark class to <html>
   useEffect(() => {

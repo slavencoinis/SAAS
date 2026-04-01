@@ -1,23 +1,26 @@
 'use client'
 
-import React, { useMemo, useState, useEffect } from 'react'
-import { useSubscriptions } from '@/hooks/useSubscriptions'
+import React, { useMemo, useState, useEffect, useCallback } from 'react'
+import { useSubscriptions, invalidateSubscriptions, demoDeleteSubscription } from '@/hooks/useSubscriptions'
 import { useLanguage } from '@/components/LanguageProvider'
-import { Subscription } from '@/types/subscription'
-import { differenceInDays, parseISO } from 'date-fns'
+import { Subscription, SubscriptionStatus } from '@/types/subscription'
+import { differenceInDays } from 'date-fns'
 import { getDisplayRenewal, formatRenewal, getMonthlyEquivalent, getYearlyEquivalent, BillingCycle } from '@/lib/renewalUtils'
 import Link from 'next/link'
-import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { PlusCircle, ExternalLink, Search, X, SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, ChevronLeft, ChevronRight, Trash2, LayoutGrid, List } from 'lucide-react'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import DeleteButton from './DeleteButton'
 import CsvExportButton from '@/components/CsvExportButton'
 import CsvImportButton from '@/components/CsvImportButton'
+import { createClient } from '@/lib/supabase/client'
+import { isDemoMode } from '@/lib/demo'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type SortKey    = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage'
+type SortKey    = 'name' | 'category' | 'price' | 'renewal' | 'status' | 'usage' | 'value'
 type SortDir    = 'asc' | 'desc'
 type ViewPeriod = 'monthly' | 'yearly'
+type ViewMode   = 'table' | 'cards'
 
 const PAGE_SIZE = 20
 
@@ -70,6 +73,12 @@ function sortSubscriptions(list: Subscription[], key: SortKey, dir: SortDir): Su
         return (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9)
       case 'usage':
         return (USAGE_ORDER[a.usage_status] ?? 9) - (USAGE_ORDER[b.usage_status] ?? 9)
+      case 'value': {
+        // Value = usage score * 1000 + monthly_cost (ascending = worst value first)
+        const scoreA = (USAGE_ORDER[a.usage_status] ?? 9) * 1000 + getMonthlyEquivalent(a.price, a.billing_cycle)
+        const scoreB = (USAGE_ORDER[b.usage_status] ?? 9) * 1000 + getMonthlyEquivalent(b.price, b.billing_cycle)
+        return scoreB - scoreA
+      }
       default:
         return 0
     }
@@ -224,6 +233,178 @@ function TableSkeleton() {
   )
 }
 
+// ─── Card view ────────────────────────────────────────────────────────────────
+
+function SubscriptionCards({
+  subscriptions,
+  viewPeriod,
+  selectedIds,
+  onToggleSelect,
+}: {
+  subscriptions: Subscription[]
+  viewPeriod: ViewPeriod
+  selectedIds: Set<string>
+  onToggleSelect: (id: string) => void
+}) {
+  const { t } = useLanguage()
+  const today = new Date()
+
+  if (subscriptions.length === 0) {
+    return (
+      <div className="rounded-2xl p-12 text-center" style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+        <Search className="w-8 h-8 mx-auto mb-3" style={{ color: 'var(--card-border)' }} />
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>{t('filter_no_results')}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      {subscriptions.map((s) => {
+        const renewalDate = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+        const daysUntil   = renewalDate ? differenceInDays(renewalDate, today) : null
+        const expiring    = daysUntil !== null && daysUntil >= 0 && daysUntil <= 7
+        const isSelected  = selectedIds.has(s.id)
+
+        const { amount, suffix } = normalisePrice(
+          s.price, s.billing_cycle, s.currency,
+          viewPeriod, t('cycle_short_monthly'), t('cycle_short_yearly'),
+        )
+
+        return (
+          <div
+            key={s.id}
+            className={`rounded-2xl p-4 transition-all ${isSelected ? 'ring-2 ring-indigo-500' : ''}`}
+            style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
+          >
+            {/* Header row */}
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <input
+                  type="checkbox"
+                  className="rounded cursor-pointer accent-indigo-600 shrink-0 mt-0.5"
+                  checked={isSelected}
+                  onChange={() => onToggleSelect(s.id)}
+                />
+                <div className="min-w-0">
+                  <Link
+                    href={`/subscriptions/${s.id}`}
+                    className="font-semibold text-sm hover:text-indigo-500 transition-colors truncate block"
+                    style={{ color: 'var(--foreground)' }}
+                  >
+                    {s.name}
+                  </Link>
+                  {s.description && (
+                    <p className="text-xs truncate mt-0.5" style={{ color: 'var(--muted)' }}>{s.description}</p>
+                  )}
+                </div>
+              </div>
+              {s.url && (
+                <a href={s.url} target="_blank" rel="noopener noreferrer"
+                  className="shrink-0 hover:text-indigo-500 transition-colors mt-0.5"
+                  style={{ color: 'var(--card-border)' }}>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
+
+            {/* Price */}
+            <p className="text-xl font-bold mb-3" style={{ color: 'var(--foreground)' }}>
+              {amount}
+              <span className="text-sm font-normal ml-0.5" style={{ color: 'var(--muted)' }}>{suffix}</span>
+            </p>
+
+            {/* Badges */}
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              <StatusBadge status={s.status} />
+              <UsageBadge usage={s.usage_status} />
+            </div>
+
+            {/* Renewal */}
+            {renewalDate && (
+              <p className={`text-xs mb-3 ${expiring ? 'text-rose-500 font-medium' : ''}`} style={!expiring ? { color: 'var(--muted)' } : {}}>
+                {formatRenewal(renewalDate)}
+                {daysUntil !== null && daysUntil >= 0 && daysUntil <= 30 && (
+                  <span className={`ml-1.5 font-semibold ${daysUntil <= 7 ? 'text-rose-500' : 'text-amber-500'}`}>
+                    ({daysUntil === 0 ? t('today') : `${daysUntil}d`})
+                  </span>
+                )}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-2" style={{ borderTop: '1px solid var(--card-border)' }}>
+              <Link href={`/subscriptions/${s.id}/edit`} className="text-xs font-medium text-indigo-500 hover:underline">
+                {t('edit')}
+              </Link>
+              <DeleteButton id={s.id} name={s.name} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Bulk toolbar ─────────────────────────────────────────────────────────────
+
+function BulkToolbar({
+  selectedIds,
+  onDeselect,
+  onBulkDelete,
+  onBulkStatus,
+  isWorking,
+}: {
+  selectedIds: Set<string>
+  onDeselect: () => void
+  onBulkDelete: () => void
+  onBulkStatus: (status: SubscriptionStatus) => void
+  isWorking: boolean
+}) {
+  const { t } = useLanguage()
+  const count = selectedIds.size
+  if (count === 0) return null
+
+  const statuses: SubscriptionStatus[] = ['active', 'paused', 'cancelled', 'trial', 'inactive', 'overlimit']
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl flex-wrap"
+      style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <span className="text-sm font-semibold" style={{ color: 'var(--foreground)' }}>
+        {count} {t('bulk_selected')}
+      </span>
+      <div className="flex-1" />
+      <select
+        disabled={isWorking}
+        defaultValue=""
+        onChange={(e) => { if (e.target.value) onBulkStatus(e.target.value as SubscriptionStatus) }}
+        className="h-8 pl-3 pr-8 rounded-lg text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50"
+        style={{ border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+      >
+        <option value="" disabled>{t('bulk_change_status')}</option>
+        {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+      </select>
+      <button
+        onClick={onBulkDelete}
+        disabled={isWorking}
+        className="flex items-center gap-1.5 h-8 px-3 rounded-lg text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors disabled:opacity-50"
+        style={{ border: '1px solid rgb(254 202 202)' }}
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+        {isWorking ? t('bulk_deleting') : t('bulk_delete')}
+      </button>
+      <button
+        onClick={onDeselect}
+        disabled={isWorking}
+        className="h-8 px-3 rounded-lg text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+        style={{ color: 'var(--muted)', border: '1px solid var(--card-border)' }}
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  )
+}
+
 // ─── Table ────────────────────────────────────────────────────────────────────
 
 function SubscriptionsTable({
@@ -232,6 +413,9 @@ function SubscriptionsTable({
   viewPeriod,
   pagination,
   onReset,
+  selectedIds,
+  onToggleSelect,
+  onToggleAll,
 }: {
   subscriptions: Subscription[]
   sortKey: SortKey
@@ -240,6 +424,9 @@ function SubscriptionsTable({
   viewPeriod: ViewPeriod
   pagination: React.ReactNode
   onReset: () => void
+  selectedIds: Set<string>
+  onToggleSelect: (id: string) => void
+  onToggleAll: (ids: string[]) => void
 }) {
   const { t } = useLanguage()
   const today = new Date()
@@ -264,12 +451,22 @@ function SubscriptionsTable({
         <table className="w-full text-sm">
           <thead style={{ borderBottom: '1px solid var(--card-border)', background: 'var(--background)' }}>
             <tr>
+              <th className="py-3 pl-4 pr-2 w-8">
+                <input
+                  type="checkbox"
+                  className="rounded cursor-pointer accent-indigo-600"
+                  checked={subscriptions.length > 0 && subscriptions.every((s) => selectedIds.has(s.id))}
+                  onChange={() => onToggleAll(subscriptions.map((s) => s.id))}
+                  aria-label="Select all"
+                />
+              </th>
               <SortTh label={t('col_name')}     sortKey="name"     active={sortKey === 'name'}     dir={sortDir} onClick={onSort} />
               <SortTh label={t('col_category')} sortKey="category" active={sortKey === 'category'} dir={sortDir} onClick={onSort} className="hidden md:table-cell" />
               <SortTh label={t('col_price')}    sortKey="price"    active={sortKey === 'price'}    dir={sortDir} onClick={onSort} />
               <SortTh label={t('col_renewal')}  sortKey="renewal"  active={sortKey === 'renewal'}  dir={sortDir} onClick={onSort} className="hidden sm:table-cell" />
               <SortTh label={t('col_status')}   sortKey="status"   active={sortKey === 'status'}   dir={sortDir} onClick={onSort} />
               <SortTh label={t('col_usage')}    sortKey="usage"    active={sortKey === 'usage'}    dir={sortDir} onClick={onSort} className="hidden lg:table-cell" />
+              <SortTh label={t('col_value')}    sortKey="value"    active={sortKey === 'value'}    dir={sortDir} onClick={onSort} className="hidden xl:table-cell" />
               <th className="py-3 px-4" />
             </tr>
           </thead>
@@ -278,9 +475,23 @@ function SubscriptionsTable({
               const renewalDate      = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
               const daysUntilRenewal = renewalDate ? differenceInDays(renewalDate, today) : null
               const isExpiringSoon   = daysUntilRenewal !== null && daysUntilRenewal >= 0 && daysUntilRenewal <= 7
+              const isSelected       = selectedIds.has(s.id)
 
               return (
-                <tr key={s.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors" style={{ borderBottom: '1px solid var(--card-border)' }}>
+                <tr
+                  key={s.id}
+                  className={`hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors ${isSelected ? 'bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}
+                  style={{ borderBottom: '1px solid var(--card-border)' }}
+                >
+                  <td className="py-3 pl-4 pr-2">
+                    <input
+                      type="checkbox"
+                      className="rounded cursor-pointer accent-indigo-600"
+                      checked={isSelected}
+                      onChange={() => onToggleSelect(s.id)}
+                      aria-label={`Select ${s.name}`}
+                    />
+                  </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <div>
@@ -338,6 +549,14 @@ function SubscriptionsTable({
                   </td>
                   <td className="py-3 px-4"><StatusBadge status={s.status} /></td>
                   <td className="hidden lg:table-cell py-3 px-4"><UsageBadge usage={s.usage_status} /></td>
+                  <td className="hidden xl:table-cell py-3 px-4">
+                    {(() => {
+                      const usageScore = USAGE_ORDER[s.usage_status] ?? 9
+                      const stars = usageScore <= 1 ? '●●●' : usageScore <= 2 ? '●●○' : usageScore <= 3 ? '●○○' : '○○○'
+                      const color = usageScore <= 1 ? 'text-emerald-600 dark:text-emerald-400' : usageScore <= 2 ? 'text-amber-500' : 'text-rose-500'
+                      return <span className={`text-xs font-mono font-bold ${color}`}>{stars}</span>
+                    })()}
+                  </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <Link href={`/subscriptions/${s.id}/edit`} className="text-xs font-medium text-indigo-500 hover:underline">
@@ -371,10 +590,19 @@ export default function SubscriptionsPage() {
   const [sortDir,        setSortDir]        = useState<SortDir>('asc')
   const [viewPeriod,     setViewPeriod]     = useState<ViewPeriod>('monthly')
   const [page,           setPage]           = useState(1)
+  const [selectedIds,    setSelectedIds]    = useState<Set<string>>(new Set())
+  const [isBulkWorking,  setIsBulkWorking]  = useState(false)
+  const [viewMode,       setViewMode]       = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('subs_view') as ViewMode) ?? 'table'
+    }
+    return 'table'
+  })
 
   const isFiltered = query !== '' || statusFilter !== 'all' || categoryFilter !== 'all' || billingFilter !== 'all'
 
   // Reset to page 1 whenever filters or sort change
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setPage(1) }, [query, statusFilter, categoryFilter, billingFilter, sortKey, sortDir])
 
   const resetFilters = () => {
@@ -391,6 +619,60 @@ export default function SubscriptionsPage() {
       setSortKey(key)
       setSortDir('asc')
     }
+  }
+
+  const handleToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) { next.delete(id) } else { next.add(id) }
+      return next
+    })
+  }, [])
+
+  const handleToggleAll = useCallback((ids: string[]) => {
+    setSelectedIds((prev) => {
+      const allSelected = ids.every((id) => prev.has(id))
+      if (allSelected) {
+        const next = new Set(prev)
+        ids.forEach((id) => next.delete(id))
+        return next
+      }
+      return new Set([...prev, ...ids])
+    })
+  }, [])
+
+  const handleBulkDelete = async () => {
+    const ids = [...selectedIds]
+    if (!window.confirm(t('bulk_delete_confirm').replace('{n}', String(ids.length)))) return
+    setIsBulkWorking(true)
+    if (isDemoMode()) {
+      ids.forEach((id) => demoDeleteSubscription(id))
+      setSelectedIds(new Set())
+      setIsBulkWorking(false)
+      return
+    }
+    const supabase = createClient()
+    await supabase.from('subscriptions').delete().in('id', ids)
+    invalidateSubscriptions()
+    setSelectedIds(new Set())
+    setIsBulkWorking(false)
+  }
+
+  const handleBulkStatus = async (status: SubscriptionStatus) => {
+    const ids = [...selectedIds]
+    setIsBulkWorking(true)
+    if (!isDemoMode()) {
+      const supabase = createClient()
+      await supabase.from('subscriptions').update({ status }).in('id', ids)
+      invalidateSubscriptions()
+    }
+    setSelectedIds(new Set())
+    setIsBulkWorking(false)
+  }
+
+  const handleSetViewMode = (mode: ViewMode) => {
+    setViewMode(mode)
+    localStorage.setItem('subs_view', mode)
   }
 
   const filtered = useMemo(() => {
@@ -452,6 +734,25 @@ export default function SubscriptionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {/* View mode toggle */}
+          <div className="hidden sm:flex rounded-xl overflow-hidden" style={{ border: '1px solid var(--input-border)' }}>
+            <button
+              onClick={() => handleSetViewMode('table')}
+              title={t('view_table')}
+              className={`h-9 px-3 flex items-center transition-colors ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+              style={viewMode !== 'table' ? { background: 'var(--input-bg)', color: 'var(--muted)' } : {}}
+            >
+              <List className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleSetViewMode('cards')}
+              title={t('view_cards')}
+              className={`h-9 px-3 flex items-center transition-colors ${viewMode === 'cards' ? 'bg-indigo-600 text-white' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+              style={viewMode !== 'cards' ? { background: 'var(--input-bg)', color: 'var(--muted)', borderLeft: '1px solid var(--input-border)' } : { borderLeft: '1px solid var(--input-border)' }}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+          </div>
           <CsvImportButton />
           <CsvExportButton subscriptions={subscriptions ?? []} />
           <Link
@@ -549,6 +850,15 @@ export default function SubscriptionsPage() {
         </div>
       </div>
 
+      {/* ── Bulk toolbar ────────────────────────────────────────────────────── */}
+      <BulkToolbar
+        selectedIds={selectedIds}
+        onDeselect={() => setSelectedIds(new Set())}
+        onBulkDelete={handleBulkDelete}
+        onBulkStatus={handleBulkStatus}
+        isWorking={isBulkWorking}
+      />
+
       {/* ── Table ───────────────────────────────────────────────────────────── */}
       {isLoading || !subscriptions ? (
         <TableSkeleton />
@@ -563,6 +873,16 @@ export default function SubscriptionsPage() {
             {t('add_first_btn')}
           </Link>
         </div>
+      ) : viewMode === 'cards' ? (
+        <>
+          <SubscriptionCards
+            subscriptions={paginated}
+            viewPeriod={viewPeriod}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
+          />
+          {paginationNode}
+        </>
       ) : (
         <SubscriptionsTable
           subscriptions={paginated}
@@ -572,6 +892,9 @@ export default function SubscriptionsPage() {
           viewPeriod={viewPeriod}
           pagination={paginationNode}
           onReset={resetFilters}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          onToggleAll={handleToggleAll}
         />
       )}
     </div>

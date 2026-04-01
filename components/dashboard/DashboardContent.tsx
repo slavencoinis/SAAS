@@ -1,11 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertTriangle, XCircle } from 'lucide-react'
+import { AlertTriangle, XCircle, PlusCircle, TrendingUp } from 'lucide-react'
 import { differenceInDays } from 'date-fns'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
-import { getDisplayRenewal, formatRenewal, BILLING_STATUSES, getMonthlyEquivalent } from '@/lib/renewalUtils'
+import { getDisplayRenewal, formatRenewal, BILLING_STATUSES, getMonthlyEquivalent, getYearlyEquivalent } from '@/lib/renewalUtils'
 import { StatusBadge, UsageBadge } from '@/components/StatusBadge'
 import CostByCategoryChart from '@/components/charts/CostByCategoryChart'
 import MonthlyTrendChart from '@/components/charts/MonthlyTrendChart'
@@ -48,6 +48,58 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
           </div>
         </div>
       )}
+
+      {/* Cost breakdown by category */}
+      {active.length > 0 && (() => {
+        const CATEGORY_COLORS: Record<string, string> = {
+          development: '#6366f1', design: '#a855f7', productivity: '#3b82f6',
+          communication: '#22c55e', marketing: '#f43f5e', storage: '#f59e0b', other: '#94a3b8',
+        }
+        const byCategory: Record<string, { monthly: number; yearly: number; count: number }> = {}
+        for (const s of active) {
+          const cat = s.category ?? 'other'
+          if (!byCategory[cat]) byCategory[cat] = { monthly: 0, yearly: 0, count: 0 }
+          byCategory[cat].monthly += getMonthlyEquivalent(s.price, s.billing_cycle)
+          byCategory[cat].yearly  += getYearlyEquivalent(s.price, s.billing_cycle)
+          byCategory[cat].count   += 1
+        }
+        const rows = Object.entries(byCategory).sort(([, a], [, b]) => b.monthly - a.monthly)
+        return (
+          <div className="rounded-2xl p-6" style={card}>
+            <h2 className="text-[13px] font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+              <TrendingUp className="w-4 h-4 text-indigo-500" />
+              {t('chart_by_category')}
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--card-border)' }}>
+                    <th className="text-left py-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('filter_category')}</th>
+                    <th className="text-right py-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('breakdown_services')}</th>
+                    <th className="text-right py-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('breakdown_monthly')}</th>
+                    <th className="text-right py-2 text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>{t('breakdown_yearly')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map(([cat, data]) => (
+                    <tr key={cat} style={{ borderBottom: '1px solid var(--card-border)' }}>
+                      <td className="py-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: CATEGORY_COLORS[cat] ?? '#94a3b8' }} />
+                          <span className="capitalize" style={{ color: 'var(--foreground)' }}>{cat}</span>
+                        </div>
+                      </td>
+                      <td className="py-2.5 text-right text-xs" style={{ color: 'var(--muted)' }}>{data.count}</td>
+                      <td className="py-2.5 text-right font-medium" style={{ color: 'var(--foreground)' }}>€{data.monthly.toFixed(2)}</td>
+                      <td className="py-2.5 text-right font-medium text-indigo-600 dark:text-indigo-400">€{data.yearly.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Expiring + Unused */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -187,6 +239,16 @@ export default function DashboardContent({ subscriptions }: { subscriptions: Sub
           </div>
         </div>
       )}
+
+      {/* Quick add FAB */}
+      <Link
+        href="/subscriptions/new"
+        className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 lg:hidden"
+        aria-label={t('quick_add_title')}
+      >
+        <PlusCircle className="w-5 h-5" />
+        {t('quick_add_title')}
+      </Link>
     </div>
   )
 }

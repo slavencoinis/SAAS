@@ -57,6 +57,7 @@ export default function SubscriptionForm({ subscription }: Props) {
   // Reset form if we navigate from one subscription's edit page to another
   useEffect(() => {
     if (subscription) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name:            subscription.name,
         description:     subscription.description ?? '',

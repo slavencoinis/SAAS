@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { format, subMonths, endOfMonth, parseISO, startOfMonth, isSameMonth } from 'date-fns'
+import { format, subMonths, endOfMonth, parseISO, isSameMonth } from 'date-fns'
 import { Subscription } from '@/types/subscription'
 import { useLanguage } from '@/components/LanguageProvider'
 import { getMonthlyEquivalent } from '@/lib/renewalUtils'

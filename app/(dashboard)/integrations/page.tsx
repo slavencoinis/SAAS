@@ -2,20 +2,15 @@
 
 import OpenAIUsageChecker from '@/components/integrations/OpenAIUsageChecker'
 import AdobeUsageChecker from '@/components/AdobeUsageChecker'
-import { Plug, Info } from 'lucide-react'
+import GitHubCopilotChecker from '@/components/integrations/GitHubCopilotChecker'
+import SlackUsageChecker from '@/components/integrations/SlackUsageChecker'
+import AWSCostChecker from '@/components/integrations/AWSCostChecker'
+import GoogleWorkspaceChecker from '@/components/integrations/GoogleWorkspaceChecker'
+import { Info } from 'lucide-react'
 import { useLanguage } from '@/components/LanguageProvider'
 
 export default function IntegrationsPage() {
   const { t } = useLanguage()
-
-  const integrationList = [
-    { name: 'OpenAI Usage API',     statusKey: 'integration_active' as const, color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
-    { name: 'Adobe Creative Cloud', statusKey: 'integration_active' as const, color: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
-    { name: 'GitHub Copilot API',   statusKey: 'integration_soon'   as const, color: 'bg-slate-100 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400' },
-    { name: 'Slack Billing API',    statusKey: 'integration_soon'   as const, color: 'bg-slate-100 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400' },
-    { name: 'AWS Cost Explorer',    statusKey: 'integration_soon'   as const, color: 'bg-slate-100 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400' },
-    { name: 'Google Workspace',     statusKey: 'integration_soon'   as const, color: 'bg-slate-100 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400' },
-  ]
 
   return (
     <div className="space-y-6">
@@ -44,33 +39,14 @@ export default function IntegrationsPage() {
         </p>
       </div>
 
-      {/* Integration cards */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* Integration cards — 2 columns on large screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <OpenAIUsageChecker />
         <AdobeUsageChecker />
-      </div>
-
-      {/* Available integrations overview */}
-      <div
-        className="rounded-2xl p-6"
-        style={{ background: 'var(--card)', border: '1px solid var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
-      >
-        <h2 className="mb-5 flex items-center gap-2 text-[13px] font-semibold" style={{ color: 'var(--foreground)' }}>
-          <Plug className="h-4 w-4" style={{ color: 'var(--muted)' }} />
-          {t('integrations_available')}
-        </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {integrationList.map(({ name, statusKey, color }) => (
-            <div
-              key={name}
-              className="flex items-center justify-between rounded-xl px-4 py-3"
-              style={{ border: '1px solid var(--card-border)' }}
-            >
-              <span className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>{name}</span>
-              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${color}`}>{t(statusKey)}</span>
-            </div>
-          ))}
-        </div>
+        <GitHubCopilotChecker />
+        <SlackUsageChecker />
+        <AWSCostChecker />
+        <GoogleWorkspaceChecker />
       </div>
     </div>
   )

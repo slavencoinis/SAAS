@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useTheme, ThemePreference } from '@/components/ThemeProvider'
 import { useLanguage } from '@/components/LanguageProvider'
@@ -20,6 +20,9 @@ import {
 } from 'lucide-react'
 import { OptiStackMark } from '@/components/OptiStackLogo'
 import { disableDemoMode, isDemoMode } from '@/lib/demo'
+import { useSubscriptions } from '@/hooks/useSubscriptions'
+import { getDisplayRenewal, BILLING_STATUSES } from '@/lib/renewalUtils'
+import { differenceInDays } from 'date-fns'
 
 const themeOptions: { value: ThemePreference; icon: typeof Sun; labelKey: 'theme_system' | 'theme_light' | 'theme_dark' }[] = [
   { value: 'system', icon: Monitor, labelKey: 'theme_system' },
@@ -39,16 +42,28 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
-  const router = useRouter()
   const { preference, setPreference } = useTheme()
   const { lang, setLang, t } = useLanguage()
+  const { data: subscriptions } = useSubscriptions()
+
+  const expiringSoonCount = (() => {
+    if (!subscriptions) return 0
+    const today = new Date()
+    return subscriptions.filter((s) => {
+      if (!(BILLING_STATUSES as readonly string[]).includes(s.status)) return false
+      const d = getDisplayRenewal(s.renewal_date, s.start_date, s.billing_cycle)
+      if (!d) return false
+      const days = differenceInDays(d, today)
+      return days >= 0 && days <= 7
+    }).length
+  })()
 
   const navItems = [
-    { href: '/dashboard',         label: t('nav_dashboard'),    icon: LayoutDashboard },
-    { href: '/subscriptions',     label: t('nav_services'),     icon: CreditCard      },
-    { href: '/subscriptions/new', label: t('nav_add_service'),  icon: PlusCircle      },
-    { href: '/integrations',      label: t('nav_integrations'), icon: Plug            },
-    { href: '/settings',          label: t('nav_settings'),     icon: Settings        },
+    { href: '/dashboard',         label: t('nav_dashboard'),    icon: LayoutDashboard, badge: 0 },
+    { href: '/subscriptions',     label: t('nav_services'),     icon: CreditCard,      badge: expiringSoonCount },
+    { href: '/subscriptions/new', label: t('nav_add_service'),  icon: PlusCircle,      badge: 0 },
+    { href: '/integrations',      label: t('nav_integrations'), icon: Plug,            badge: 0 },
+    { href: '/settings',          label: t('nav_settings'),     icon: Settings,        badge: 0 },
   ]
 
   const handleLogout = async () => {
@@ -96,7 +111,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
       {/* ── Navigation ────────────────────────────────────────────────────── */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, label, icon: Icon, badge }) => {
           const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
           return (
             <Link
@@ -111,7 +126,12 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
               style={!active ? { color: 'var(--muted)' } : {}}
             >
               <Icon className="w-4 h-4 shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge > 0 && (
+                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                  {badge}
+                </span>
+              )}
             </Link>
           )
         })}

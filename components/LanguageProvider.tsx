@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { Language, TranslationKey, translations } from '@/lib/i18n'
 
 interface LanguageContextValue {
@@ -16,15 +16,14 @@ const LanguageContext = createContext<LanguageContextValue>({
 })
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Language>('sr')
-
-  // Read persisted preference on mount
-  useEffect(() => {
+  const [lang, setLangState] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'sr'
     try {
       const stored = localStorage.getItem('lang') as Language | null
-      if (stored === 'sr' || stored === 'en') setLangState(stored)
+      if (stored === 'sr' || stored === 'en') return stored
     } catch {}
-  }, [])
+    return 'sr'
+  })
 
   const setLang = (l: Language) => {
     setLangState(l)
